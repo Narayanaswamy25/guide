@@ -97,7 +97,7 @@ src/
 ├── types.ts              # TypeScript type definitions
 │
 ├── pages/                # Route pages
-│   ├── Dashboard.tsx     # Main dashboard
+│   ├── Dashboard.tsx     # Main dashboard 
 │   ├── Tasks.tsx         # Task management
 │   ├── Habits.tsx        # Habit tracking
 │   ├── Calendar.tsx      # Calendar view
@@ -286,3 +286,4 @@ Check console logs for error messages:
 - Check Network tab for failed API calls
 
 Happy coding! 🎉
+Explanation
