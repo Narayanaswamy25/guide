@@ -32,6 +32,9 @@ export interface Degree {
 }
 
 export const degrees: Degree[] = [
+  // ────────────────────────────────────────────────────────────
+  // B.TECH IT
+  // ────────────────────────────────────────────────────────────
   {
     id: 'btech-it',
     title: 'B.Tech Information Technology',
@@ -160,6 +163,10 @@ export const degrees: Degree[] = [
       },
     ],
   },
+
+  // ────────────────────────────────────────────────────────────
+  // B.TECH CSE
+  // ────────────────────────────────────────────────────────────
   {
     id: 'btech-cse',
     title: 'B.Tech Computer Science Engineering',
@@ -181,7 +188,7 @@ export const degrees: Degree[] = [
         avgSalary: '₹15–50+ LPA',
         modules: [
           { id: 'm1', title: 'Arrays & Strings', description: 'Manipulation, two pointers, sliding window and pattern matching techniques.', youtubeId: 'B31LgI4Y4DQ', duration: '5 hrs', topics: ['Array Traversal', 'Two Pointers', 'Sliding Window', 'String Manipulation', 'Hashing', 'Prefix Sums'] },
-          { id: 'm2', title: 'Linked Lists', description: 'Singly, doubly and circular linked lists with classic interview problems.', youtubeId: 'Hj_rA0dhr1', duration: '4 hrs', topics: ['Traversal', 'Reversal', 'Cycle Detection', 'Merge Sort on LL', 'Doubly LL', 'Circular LL'] },
+          { id: 'm2', title: 'Linked Lists', description: 'Singly, doubly and circular linked lists with classic interview problems.', youtubeId: 'njTh_OwMljA', duration: '4 hrs', topics: ['Traversal', 'Reversal', 'Cycle Detection', 'Merge Sort on LL', 'Doubly LL', 'Circular LL'] },
           { id: 'm3', title: 'Stacks & Queues', description: 'Stack-based problems, monotonic stacks, queue implementations and priority queues.', youtubeId: 'wjI1WNcIntg', duration: '4 hrs', topics: ['Stack Operations', 'Queue Operations', 'Monotonic Stack', 'Min Stack', 'Deque', 'Priority Queue'] },
           { id: 'm4', title: 'Trees & Binary Search Trees', description: 'Tree traversals, BST operations, balanced trees and tree interview patterns.', youtubeId: 'fAAZixBzIAI', duration: '6 hrs', topics: ['DFS/BFS Traversals', 'BST Operations', 'Height & Diameter', 'LCA', 'AVL Trees', 'Segment Trees'] },
           { id: 'm5', title: 'Graphs', description: 'Graph representations, BFS, DFS, shortest paths and topological sort.', youtubeId: 'tWVWeAqZ0WU', duration: '7 hrs', topics: ['Adjacency List', 'BFS', 'DFS', "Dijkstra's", "Bellman-Ford", 'Topological Sort', 'Union-Find'] },
@@ -202,12 +209,16 @@ export const degrees: Degree[] = [
           { id: 'm1', title: 'System Design Fundamentals', description: 'Scalability, reliability, availability and the core trade-offs in distributed systems.', youtubeId: 'xpDnVSmNFX0', duration: '3 hrs', topics: ['Scalability', 'CAP Theorem', 'ACID vs BASE', 'SLA/SLO', 'Availability', 'Consistency'] },
           { id: 'm2', title: 'Databases at Scale', description: 'SQL vs NoSQL, sharding, replication and choosing the right database.', youtubeId: 'W2Z7fbCLSTw', duration: '4 hrs', topics: ['SQL vs NoSQL', 'Sharding', 'Replication', 'Indexing', 'Database Partitioning', 'Read Replicas'] },
           { id: 'm3', title: 'Caching Strategies', description: 'Redis, CDN caching, cache invalidation and cache-aside patterns.', youtubeId: 'joifNgoXXFk', duration: '3 hrs', topics: ['Cache Types', 'Redis', 'CDN', 'Cache Invalidation', 'Write-Through', 'LRU Eviction'] },
-          { id: 'm4', title: 'Message Queues & Streaming', description: 'Kafka, RabbitMQ and event-driven architecture for async systems.', youtubeId: 'J6CVTwFYqKg', duration: '4 hrs', topics: ['Event-Driven Design', 'Kafka', 'RabbitMQ', 'Producer/Consumer', 'Topics & Partitions', 'exactly-once delivery'] },
+          { id: 'm4', title: 'Message Queues & Streaming', description: 'Kafka, RabbitMQ and event-driven architecture for async systems.', youtubeId: 'J6CVTwFYqKg', duration: '4 hrs', topics: ['Event-Driven Design', 'Kafka', 'RabbitMQ', 'Producer/Consumer', 'Topics & Partitions', 'Exactly-once Delivery'] },
           { id: 'm5', title: 'Designing Real Systems', description: 'Design WhatsApp, YouTube, Uber, Twitter — step by step system design walkthroughs.', youtubeId: '0163cssUxLA', duration: '5 hrs', topics: ['URL Shortener', 'Chat System', 'Video Streaming', 'Ride Sharing', 'News Feed', 'Rate Limiter'] },
         ],
       },
     ],
   },
+
+  // ────────────────────────────────────────────────────────────
+  // B.TECH EEE
+  // ────────────────────────────────────────────────────────────
   {
     id: 'btech-eee',
     title: 'B.Tech Electronics & Electrical Engineering',
@@ -228,7 +239,7 @@ export const degrees: Degree[] = [
         jobRoles: ['Embedded Engineer', 'IoT Developer', 'Firmware Engineer', 'Hardware Engineer'],
         avgSalary: '₹5–20 LPA',
         modules: [
-          { id: 'm1', title: 'Electronics Fundamentals', description: 'Ohm\'s law, circuits, components and basic circuit analysis.', youtubeId: 'OZwpRRWANlY', duration: '4 hrs', topics: ["Ohm's Law", 'Resistors', 'Capacitors', 'Inductors', 'Circuit Analysis', 'Kirchhoff\'s Laws'] },
+          { id: 'm1', title: 'Electronics Fundamentals', description: 'Ohm\'s law, circuits, components and basic circuit analysis.', youtubeId: 'OZwpRRWANlY', duration: '4 hrs', topics: ["Ohm's Law", 'Resistors', 'Capacitors', 'Inductors', 'Circuit Analysis', "Kirchhoff's Laws"] },
           { id: 'm2', title: 'Arduino Programming', description: 'Start with Arduino IDE, GPIO, sensors and actuators.', youtubeId: 'zJ-LqeX_fLU', duration: '5 hrs', topics: ['Arduino IDE', 'Digital I/O', 'Analog I/O', 'PWM', 'Serial Communication', 'Sensors'] },
           { id: 'm3', title: 'Raspberry Pi & Linux', description: 'Single board computing, Linux on embedded systems and GPIO control with Python.', youtubeId: 'NpEaa2P7qZI', duration: '5 hrs', topics: ['RPi Setup', 'Linux Basics', 'Python GPIO', 'I2C/SPI', 'Camera Module', 'Web Server'] },
           { id: 'm4', title: 'IoT Protocols', description: 'MQTT, HTTP, WiFi and wireless communication for connected devices.', youtubeId: 'WmcgZpVQ5Ec', duration: '4 hrs', topics: ['MQTT', 'HTTP REST', 'WiFi', 'Bluetooth LE', 'LoRa', 'ZigBee'] },
@@ -254,6 +265,10 @@ export const degrees: Degree[] = [
       },
     ],
   },
+
+  // ────────────────────────────────────────────────────────────
+  // B.TECH MECHANICAL
+  // ────────────────────────────────────────────────────────────
   {
     id: 'btech-mech',
     title: 'B.Tech Mechanical Engineering',
@@ -300,6 +315,10 @@ export const degrees: Degree[] = [
       },
     ],
   },
+
+  // ────────────────────────────────────────────────────────────
+  // B.TECH AI/ML
+  // ────────────────────────────────────────────────────────────
   {
     id: 'btech-ai',
     title: 'B.Tech Artificial Intelligence & ML',
@@ -320,7 +339,7 @@ export const degrees: Degree[] = [
         jobRoles: ['Generative AI Engineer', 'Prompt Engineer', 'ML Engineer', 'AI Product Builder'],
         avgSalary: '₹20–60+ LPA',
         modules: [
-          { id: 'm1', title: 'Transformer Architecture', description: 'How attention mechanisms and transformers actually work under the hood.', youtubeId: 'aircAruvnKk', duration: '4 hrs', topics: ['Self-Attention', 'Multi-Head Attention', 'Positional Encoding', 'Encoder/Decoder', 'BERT', 'GPT Architecture'] },
+          { id: 'm1', title: 'Transformer Architecture', description: 'How attention mechanisms and transformers actually work under the hood.', youtubeId: 'TQQ-KCs2j5Y', duration: '4 hrs', topics: ['Self-Attention', 'Multi-Head Attention', 'Positional Encoding', 'Encoder/Decoder', 'BERT', 'GPT Architecture'] },
           { id: 'm2', title: 'Prompt Engineering', description: 'Get the most out of LLMs — zero-shot, few-shot, chain-of-thought and advanced prompting.', youtubeId: 'T_P_yoHUGnA', duration: '3 hrs', topics: ['Zero-Shot', 'Few-Shot', 'Chain-of-Thought', 'RAG', 'System Prompts', 'Evaluation'] },
           { id: 'm3', title: 'LangChain & AI Apps', description: 'Build production AI applications with LangChain, vector databases and agents.', youtubeId: 'lG7Uxts9SXs', duration: '6 hrs', topics: ['LangChain Chains', 'Memory', 'Agents', 'Tools', 'Vector Stores', 'RAG Pipeline'] },
           { id: 'm4', title: 'Fine-Tuning LLMs', description: 'Adapt pre-trained models to your domain using LoRA, PEFT and Hugging Face Transformers.', youtubeId: 'eC6Hd1hFvos', duration: '5 hrs', topics: ['Transfer Learning', 'LoRA', 'PEFT', 'Instruction Tuning', 'Dataset Preparation', 'Evaluation Metrics'] },
@@ -346,6 +365,10 @@ export const degrees: Degree[] = [
       },
     ],
   },
+
+  // ────────────────────────────────────────────────────────────
+  // BCA / MCA
+  // ────────────────────────────────────────────────────────────
   {
     id: 'bca',
     title: 'BCA / MCA',
