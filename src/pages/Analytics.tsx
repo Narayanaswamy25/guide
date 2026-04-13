@@ -2,16 +2,12 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { 
-  BarChart3, 
-  TrendingUp, 
-  Clock, 
   CheckCircle2, 
   Zap, 
   ArrowUpRight,
   ArrowDownRight,
   Target,
-  Activity,
-  PieChart as PieChartIcon
+  Activity
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -21,8 +17,6 @@ import {
   CartesianGrid, 
   Tooltip, 
   ResponsiveContainer,
-  LineChart,
-  Line,
   PieChart,
   Pie,
   Cell,
@@ -179,8 +173,8 @@ export const Analytics: React.FC = () => {
               </div>
             </div>
           </div>
-          <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-[300px] w-full min-h-[300px]">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <BarChart data={completionData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
                 <XAxis 
@@ -214,8 +208,8 @@ export const Analytics: React.FC = () => {
         {/* Priority Distribution */}
         <div className="lg:col-span-4 glass-card p-8">
           <h2 className="text-xl font-black uppercase tracking-tight text-white mb-8">Priority Mix</h2>
-          <div className="h-[250px] w-full relative">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-[250px] w-full relative min-h-[250px]">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <PieChart>
                 <Pie
                   data={priorityData}
@@ -272,8 +266,8 @@ export const Analytics: React.FC = () => {
             Peak: 14:00 (95%)
           </div>
         </div>
-        <div className="h-[200px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className="h-[200px] w-full min-h-[200px]">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
             <AreaChart data={focusData}>
               <defs>
                 <linearGradient id="colorFocusAnalytics" x1="0" y1="0" x2="0" y2="1">

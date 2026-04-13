@@ -15,21 +15,21 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const { user } = useAuth();
 
   return (
-    <div className="flex min-h-screen bg-[#000000] text-white overflow-hidden font-sans">
+    <div className="flex min-h-screen bg-[#000000] dark:bg-[#000000] light:bg-[#F8F9FA] text-white dark:text-white light:text-neutral-900 overflow-hidden font-sans transition-colors duration-300">
       {/* Sidebar - Fixed */}
       <Sidebar />
 
       {/* Main Content Area */}
       <div className="flex-grow flex flex-col min-w-0 relative">
         {/* Top Navigation Bar */}
-        <header className="h-20 border-b border-white/5 flex items-center justify-between px-8 sticky top-0 bg-black/50 backdrop-blur-xl z-40">
+        <header className="h-20 border-b border-white/5 light:border-neutral-200 flex items-center justify-between px-8 sticky top-0 bg-black/50 dark:bg-black/50 light:bg-white/80 backdrop-blur-xl z-40">
           <div className="flex items-center gap-8">
             <GlobalSearch />
           </div>
           
           <div className="flex items-center gap-6">
             <div className="hidden md:flex flex-col items-end">
-              <span className="text-[10px] font-black uppercase tracking-widest text-white">{user?.name}</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-white dark:text-white light:text-neutral-900">{user?.name}</span>
               <span className="text-[8px] font-black uppercase tracking-[0.2em] text-[#DFFF00]">System Active</span>
             </div>
             <div className="w-10 h-10 rounded-lg border border-white/10 overflow-hidden bg-white/5">

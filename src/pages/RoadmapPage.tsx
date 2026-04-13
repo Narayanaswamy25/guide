@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
-  ChevronRight, ChevronLeft, PlayCircle, CheckCircle2,
-  Lock, Clock, BookOpen, Briefcase, ArrowRight, ExternalLink, Star
+  ChevronRight, ChevronLeft, CheckCircle2,
+  Clock, BookOpen, Briefcase, ArrowRight, ExternalLink, Star
 } from 'lucide-react';
 import { getDomainById, getDegreeById } from '../data/degreesData';
 
@@ -71,12 +71,20 @@ export const RoadmapPage: React.FC = () => {
             </div>
           </div>
           {/* Quiz CTA */}
-          <button
-            onClick={() => navigate(`/explore/${degreeId}/${domainId}/quiz`)}
-            className="btn-primary flex items-center gap-2 text-[10px]"
-          >
-            Take Quiz <ArrowRight size={14} />
-          </button>
+          <div className="relative group/quiz">
+            <button
+              onClick={() => progress === 100 && navigate(`/explore/${degreeId}/${domainId}/quiz`)}
+              disabled={progress < 100}
+              className={`btn-primary flex items-center gap-2 text-[10px] ${progress < 100 ? 'opacity-50 cursor-not-allowed grayscale' : ''}`}
+            >
+              Take Quiz <ArrowRight size={14} />
+            </button>
+            {progress < 100 && (
+              <div className="absolute bottom-full right-0 mb-2 px-3 py-1.5 bg-black border border-white/10 rounded text-[8px] font-black uppercase tracking-widest text-neutral-500 opacity-0 group-hover/quiz:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                Complete all modules to unlock
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -236,8 +244,9 @@ export const RoadmapPage: React.FC = () => {
                 {completedModules.has(activeModuleIdx) ? 'Completed ✓' : 'Mark Complete & Next'}
               </button>
               <button
-                onClick={() => navigate(`/explore/${degreeId}/${domainId}/quiz`)}
-                className="btn-secondary flex items-center gap-2"
+                onClick={() => progress === 100 && navigate(`/explore/${degreeId}/${domainId}/quiz`)}
+                disabled={progress < 100}
+                className={`btn-secondary flex items-center gap-2 ${progress < 100 ? 'opacity-40 cursor-not-allowed' : ''}`}
               >
                 Take Quiz <ArrowRight size={16} />
               </button>

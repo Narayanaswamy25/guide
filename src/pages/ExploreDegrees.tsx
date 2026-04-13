@@ -1,11 +1,23 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { ArrowRight, Clock, BookOpen, Search, GraduationCap, Zap, Star } from 'lucide-react';
+import { ArrowRight, BookOpen, Search, GraduationCap, Zap, Star, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { degrees } from '../data/degreesData';
+import { useAuth } from '../context/AuthContext';
 
 export const ExploreDegrees: React.FC = () => {
   const [search, setSearch] = useState('');
+  const { user, updateProfile } = useAuth();
+
+  const handleEnroll = async (e: React.MouseEvent, degreeId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      await updateProfile({ selectedDegree: degreeId });
+    } catch (error) {
+      console.error('Enrollment error:', error);
+    }
+  };
 
   const filtered = degrees.filter(
     d =>
@@ -84,8 +96,23 @@ export const ExploreDegrees: React.FC = () => {
               </div>
 
               {/* Content */}
-              <div className="text-[8px] font-black uppercase tracking-widest mb-2" style={{ color: degree.color }}>
-                {degree.duration}
+              <div className="flex justify-between items-start mb-2">
+                <div className="text-[8px] font-black uppercase tracking-widest" style={{ color: degree.color }}>
+                  {degree.duration}
+                </div>
+                {user?.selectedDegree === degree.id ? (
+                  <div className="flex items-center gap-1 text-[#c8ff00] text-[8px] font-black uppercase tracking-widest">
+                    <CheckCircle2 size={10} />
+                    Enrolled
+                  </div>
+                ) : (
+                  <button 
+                    onClick={(e) => handleEnroll(e, degree.id)}
+                    className="text-[8px] font-black uppercase tracking-widest text-neutral-500 hover:text-white transition-colors"
+                  >
+                    Enroll Now
+                  </button>
+                )}
               </div>
               <h2 className="text-xl font-black uppercase tracking-tight text-white mb-3 group-hover:text-[#c8ff00] transition-colors leading-tight">
                 {degree.title}

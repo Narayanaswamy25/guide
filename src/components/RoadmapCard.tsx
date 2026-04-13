@@ -13,7 +13,7 @@ interface RoadmapCardProps {
 
 export const RoadmapCard: React.FC<RoadmapCardProps> = ({ path, isSaved, onToggleSave }) => {
   const [progress, setProgress] = useState(0);
-  const IconComponent = (LucideIcons as any)[path.icon] || LucideIcons.HelpCircle;
+  const IconComponent = (LucideIcons as unknown as Record<string, LucideIcons.LucideIcon>)[path.icon] || LucideIcons.HelpCircle;
   const { Star, Clock, ArrowRight, Zap, CheckCircle2, Bookmark } = LucideIcons;
 
   useEffect(() => {

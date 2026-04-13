@@ -1,5 +1,5 @@
 
-import { CareerPath, Difficulty, DegreeType } from './types';
+import { CareerPath, DegreeType } from './types';
 
 const gid = () => Math.random().toString(36).substr(2, 9);
 

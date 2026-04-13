@@ -2,22 +2,18 @@
 import React from 'react';
 import { 
   User, 
-  Shield, 
   Bell, 
   Monitor, 
   Globe, 
   Database, 
-  Key, 
   LogOut,
   ChevronRight,
-  Zap,
-  Layout,
   Moon,
   Sun,
-  Smartphone,
-  CreditCard
+  Smartphone
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme, Theme } from '../context/ThemeContext';
 
 const sections = [
   {
@@ -25,15 +21,6 @@ const sections = [
     label: 'Account Settings',
     items: [
       { label: 'Profile Information', icon: User, desc: 'Update your academic profile and photo' },
-      { label: 'Security & Authentication', icon: Shield, desc: 'Manage 2FA and login sessions' },
-      { label: 'Billing & Subscription', icon: CreditCard, desc: 'Manage your account subscription' },
-    ]
-  },
-  {
-    id: 'workspace',
-    label: 'Learning Preferences',
-    items: [
-      { label: 'Study Integrations', icon: Zap, desc: 'Connect external learning tools' },
       { label: 'Data & Privacy', icon: Database, desc: 'Export and manage your academic data' },
     ]
   },
@@ -50,6 +37,13 @@ const sections = [
 
 export const Settings: React.FC = () => {
   const { user, logout } = useAuth();
+  const { theme, setTheme } = useTheme();
+
+  const themeOptions = [
+    { id: 'dark', label: 'Deep Black', icon: Moon },
+    { id: 'light', label: 'High Contrast', icon: Sun },
+    { id: 'system', label: 'System Sync', icon: Smartphone },
+  ];
 
   return (
     <div className="space-y-10">
@@ -59,14 +53,11 @@ export const Settings: React.FC = () => {
           <div className="text-[10px] font-black uppercase tracking-[0.4em] text-[#DFFF00] mb-2">
             System Configuration // Node: {user?.id}
           </div>
-          <h1 className="text-5xl font-black uppercase tracking-tighter text-white">
+          <h1 className="text-5xl font-black uppercase tracking-tighter text-white dark:text-white light:text-black">
             Settings
           </h1>
         </div>
         <div className="flex items-center gap-3">
-          <button className="px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-white/10 transition-all">
-            Reset Defaults
-          </button>
           <button className="px-6 py-3 bg-[#DFFF00] text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_20px_rgba(223,255,0,0.2)]">
             Save Changes
           </button>
@@ -92,7 +83,7 @@ export const Settings: React.FC = () => {
                         <item.icon size={18} />
                       </div>
                       <div>
-                        <div className="text-sm font-black text-white uppercase tracking-tight group-hover:text-[#DFFF00] transition-colors">
+                        <div className="text-sm font-black text-white dark:text-white light:text-black uppercase tracking-tight group-hover:text-[#DFFF00] transition-colors">
                           {item.label}
                         </div>
                         <div className="text-[10px] text-neutral-600 font-medium mt-0.5">
@@ -100,7 +91,7 @@ export const Settings: React.FC = () => {
                         </div>
                       </div>
                     </div>
-                    <ChevronRight size={16} className="text-neutral-800 group-hover:text-white transition-colors" />
+                    <ChevronRight size={16} className="text-neutral-800 group-hover:text-white dark:group-hover:text-white light:group-hover:text-black transition-colors" />
                   </button>
                 ))}
               </div>
@@ -116,7 +107,7 @@ export const Settings: React.FC = () => {
                 <LogOut size={18} />
               </div>
               <div>
-                <div className="text-sm font-black text-white uppercase tracking-tight group-hover:text-red-500 transition-colors">
+                <div className="text-sm font-black text-white dark:text-white light:text-black uppercase tracking-tight group-hover:text-red-500 transition-colors">
                   Deauthorize Session
                 </div>
                 <div className="text-[10px] text-neutral-600 font-medium mt-0.5">
@@ -129,8 +120,8 @@ export const Settings: React.FC = () => {
 
         {/* Active Section Content */}
         <div className="lg:col-span-8 space-y-10">
-          <section className="glass-card p-10">
-            <h3 className="text-xl font-black uppercase tracking-tight text-white mb-10 flex items-center gap-3">
+          <section className="glass-card p-10 dark:bg-white/[0.02] light:bg-white light:border-neutral-200">
+            <h3 className="text-xl font-black uppercase tracking-tight text-white dark:text-white light:text-black mb-10 flex items-center gap-3">
               <Monitor className="text-[#DFFF00]" size={20} />
               Appearance
             </h3>
@@ -139,72 +130,44 @@ export const Settings: React.FC = () => {
               <div>
                 <label className="text-[10px] font-black uppercase tracking-widest text-neutral-600 mb-6 block">Theme Mode</label>
                 <div className="grid grid-cols-3 gap-4">
-                  {[
-                    { id: 'dark', label: 'Deep Black', icon: Moon, active: true },
-                    { id: 'light', label: 'High Contrast', icon: Sun, active: false },
-                    { id: 'system', label: 'System Sync', icon: Smartphone, active: false },
-                  ].map((theme) => (
+                  {themeOptions.map((option) => (
                     <button 
-                      key={theme.id}
+                      key={option.id}
+                      onClick={() => setTheme(option.id as Theme)}
                       className={`p-6 rounded-2xl border transition-all flex flex-col items-center gap-4 ${
-                        theme.active ? 'bg-[#DFFF00]/5 border-[#DFFF00]/30 text-[#DFFF00]' : 'bg-white/[0.02] border-white/5 text-neutral-500 hover:border-white/10'
+                        theme === option.id 
+                          ? 'bg-[#DFFF00]/5 border-[#DFFF00]/30 text-[#DFFF00]' 
+                          : 'bg-white/[0.02] border-white/5 text-neutral-500 hover:border-white/10 light:bg-neutral-50 light:border-neutral-200'
                       }`}
                     >
-                      <theme.icon size={24} />
-                      <span className="text-[10px] font-black uppercase tracking-widest">{theme.label}</span>
+                      <option.icon size={24} />
+                      <span className="text-[10px] font-black uppercase tracking-widest">{option.label}</span>
                     </button>
                   ))}
                 </div>
               </div>
-
-              <div>
-                <label className="text-[10px] font-black uppercase tracking-widest text-neutral-600 mb-6 block">Accent Color</label>
-                <div className="flex items-center gap-4">
-                  {['#DFFF00', '#FF00FF', '#00FFFF', '#FFFFFF', '#4f46e5'].map((color) => (
-                    <button 
-                      key={color}
-                      className={`w-10 h-10 rounded-full border-4 border-black shadow-xl transition-transform hover:scale-110 ${
-                        color === '#DFFF00' ? 'ring-2 ring-[#DFFF00] ring-offset-4 ring-offset-black' : ''
-                      }`}
-                      style={{ backgroundColor: color }}
-                    ></button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between py-6 border-t border-white/5">
-                <div>
-                  <div className="text-sm font-black text-white uppercase tracking-tight mb-1">Reduced Motion</div>
-                  <div className="text-[10px] text-neutral-600 font-medium">Disable complex animations and transitions</div>
-                </div>
-                <button className="w-12 h-6 bg-neutral-800 rounded-full relative transition-colors hover:bg-neutral-700">
-                  <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full"></div>
-                </button>
-              </div>
             </div>
           </section>
 
-          <section className="glass-card p-10">
-            <h3 className="text-xl font-black uppercase tracking-tight text-white mb-10 flex items-center gap-3">
+          <section className="glass-card p-10 dark:bg-white/[0.02] light:bg-white light:border-neutral-200">
+            <h3 className="text-xl font-black uppercase tracking-tight text-white dark:text-white light:text-black mb-10 flex items-center gap-3">
               <Globe className="text-[#DFFF00]" size={20} />
               Regional
             </h3>
             <div className="grid md:grid-cols-2 gap-8">
               <div className="space-y-4">
                 <label className="text-[10px] font-black uppercase tracking-widest text-neutral-600 block">Language</label>
-                <select className="w-full bg-white/[0.02] border border-white/5 rounded-xl p-4 text-sm text-white focus:outline-none focus:border-[#DFFF00]/30 transition-all">
+                <select className="w-full bg-white/[0.02] light:bg-neutral-50 border border-white/5 light:border-neutral-200 rounded-xl p-4 text-sm text-white light:text-black focus:outline-none focus:border-[#DFFF00]/30 transition-all">
+                  <option>English (India)</option>
                   <option>English (US)</option>
-                  <option>English (UK)</option>
-                  <option>German</option>
-                  <option>Japanese</option>
+                  <option>Hindi</option>
                 </select>
               </div>
               <div className="space-y-4">
                 <label className="text-[10px] font-black uppercase tracking-widest text-neutral-600 block">Timezone</label>
-                <select className="w-full bg-white/[0.02] border border-white/5 rounded-xl p-4 text-sm text-white focus:outline-none focus:border-[#DFFF00]/30 transition-all">
-                  <option>UTC-08:00 (Pacific Time)</option>
+                <select className="w-full bg-white/[0.02] light:bg-neutral-50 border border-white/5 light:border-neutral-200 rounded-xl p-4 text-sm text-white light:text-black focus:outline-none focus:border-[#DFFF00]/30 transition-all">
+                  <option>UTC+05:30 (IST - Kolkata)</option>
                   <option>UTC+00:00 (GMT)</option>
-                  <option>UTC+01:00 (CET)</option>
                 </select>
               </div>
             </div>

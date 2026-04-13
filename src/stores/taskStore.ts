@@ -1,26 +1,90 @@
 import { create } from 'zustand';
-import api from '../lib/api';
+import { 
+  collection, 
+  query, 
+  where, 
+  onSnapshot, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  doc, 
+  serverTimestamp,
+  orderBy
+} from 'firebase/firestore';
+import { db, auth } from '../lib/firebase';
 
 export type TaskStatus = 'backlog' | 'todo' | 'in-progress' | 'done' | 'canceled';
 export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
 
 export interface Task {
   id: string;
+  userId: string;
   title: string;
   description: string;
   status: TaskStatus;
   priority: TaskPriority;
   dueDate: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: unknown;
+  updatedAt: unknown;
+}
+
+enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+interface FirestoreErrorInfo {
+  error: string;
+  operationType: OperationType;
+  path: string | null;
+  authInfo: {
+    userId: string | undefined;
+    email: string | null | undefined;
+    emailVerified: boolean | undefined;
+    isAnonymous: boolean | undefined;
+    tenantId: string | null | undefined;
+    providerInfo: {
+      providerId: string;
+      displayName: string | null;
+      email: string | null;
+      photoUrl: string | null;
+    }[];
+  }
+}
+
+function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: auth.currentUser?.uid,
+      email: auth.currentUser?.email,
+      emailVerified: auth.currentUser?.emailVerified,
+      isAnonymous: auth.currentUser?.isAnonymous,
+      tenantId: auth.currentUser?.tenantId,
+      providerInfo: auth.currentUser?.providerData.map(provider => ({
+        providerId: provider.providerId,
+        displayName: provider.displayName,
+        email: provider.email,
+        photoUrl: provider.photoURL
+      })) || []
+    },
+    operationType,
+    path
+  };
+  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  throw new Error(JSON.stringify(errInfo));
 }
 
 interface TaskState {
   tasks: Task[];
   isLoading: boolean;
   error: string | null;
-  fetchTasks: () => Promise<void>;
-  addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  subscribeTasks: () => () => void;
+  addTask: (task: Omit<Task, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => Promise<void>;
   updateTask: (id: string, updates: Partial<Task>) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
   moveTask: (id: string, newStatus: TaskStatus) => Promise<void>;
@@ -31,44 +95,63 @@ export const useTaskStore = create<TaskState>((set, get) => ({
   isLoading: false,
   error: null,
 
-  fetchTasks: async () => {
+  subscribeTasks: () => {
+    const userId = auth.currentUser?.uid;
+    if (!userId) return () => {};
+
     set({ isLoading: true });
-    try {
-      const res = await api.get('/tasks');
-      set({ tasks: res.data, error: null });
-    } catch (error) {
-      set({ error: 'Failed to fetch tasks', isLoading: false });
-    } finally {
-      set({ isLoading: false });
-    }
+    const q = query(
+      collection(db, 'tasks'), 
+      where('userId', '==', userId),
+      orderBy('createdAt', 'desc')
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const tasks = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Task[];
+      set({ tasks, isLoading: false, error: null });
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'tasks');
+    });
+
+    return unsubscribe;
   },
 
   addTask: async (taskData) => {
+    const userId = auth.currentUser?.uid;
+    if (!userId) return;
+
     try {
-      const res = await api.post('/tasks', taskData);
-      set((state) => ({ tasks: [...state.tasks, res.data] }));
+      await addDoc(collection(db, 'tasks'), {
+        ...taskData,
+        userId,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
     } catch (error) {
-      console.error('Add task error', error);
+      handleFirestoreError(error, OperationType.CREATE, 'tasks');
     }
   },
 
   updateTask: async (id, updates) => {
     try {
-      await api.put(`/tasks/${id}`, updates);
-      set((state) => ({
-        tasks: state.tasks.map(task => task.id === id ? { ...task, ...updates } : task)
-      }));
+      const taskRef = doc(db, 'tasks', id);
+      await updateDoc(taskRef, {
+        ...updates,
+        updatedAt: serverTimestamp(),
+      });
     } catch (error) {
-      console.error('Update task error', error);
+      handleFirestoreError(error, OperationType.UPDATE, `tasks/${id}`);
     }
   },
 
   deleteTask: async (id) => {
     try {
-      await api.delete(`/tasks/${id}`);
-      set((state) => ({ tasks: state.tasks.filter(task => task.id !== id) }));
+      await deleteDoc(doc(db, 'tasks', id));
     } catch (error) {
-      console.error('Delete task error', error);
+      handleFirestoreError(error, OperationType.DELETE, `tasks/${id}`);
     }
   },
 

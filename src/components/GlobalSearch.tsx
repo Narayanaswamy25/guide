@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, Command, X, FileText, CheckCircle2, BookOpen, Activity, ArrowRight } from 'lucide-react';
+import { Search, Command, X, CheckCircle2, BookOpen, Activity, ArrowRight, LucideIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTaskStore } from '../stores/taskStore';
 import { useHabitStore } from '../stores/habitStore';
@@ -30,11 +30,21 @@ export const GlobalSearch: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [toggleSearch]);
 
-  const results = query.trim() === '' ? [] : [
+  interface SearchResult {
+    id: string;
+    type: string;
+    icon: LucideIcon;
+    color: string;
+    path: string;
+    title?: string;
+    name?: string;
+  }
+
+  const results: SearchResult[] = query.trim() === '' ? [] : [
     ...tasks.filter(t => t.title.toLowerCase().includes(query.toLowerCase())).map(t => ({ ...t, type: 'task', icon: CheckCircle2, color: 'text-[#DFFF00]', path: '/tasks' })),
     ...habits.filter(h => h.name.toLowerCase().includes(query.toLowerCase())).map(h => ({ ...h, type: 'habit', icon: Activity, color: 'text-[#FF00FF]', path: '/habits' })),
     // Add more types as needed
-  ].slice(0, 8);
+  ].slice(0, 8) as SearchResult[];
 
   const handleSelect = (path: string) => {
     navigate(path);
@@ -94,7 +104,7 @@ export const GlobalSearch: React.FC = () => {
               <div className="max-h-[60vh] overflow-y-auto p-4 custom-scrollbar">
                 {results.length > 0 ? (
                   <div className="space-y-2">
-                    {results.map((result: any, i) => (
+                    {results.map((result) => (
                       <button
                         key={`${result.type}-${result.id}`}
                         onClick={() => handleSelect(result.path)}

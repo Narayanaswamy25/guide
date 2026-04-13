@@ -1,8 +1,8 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { 
-  User, 
+  User as UserIcon, 
   Award, 
   CheckCircle2, 
   TrendingUp, 
@@ -11,35 +11,56 @@ import {
   ArrowUpRight, 
   Clock, 
   Target,
-  LogOut, 
   Layout, 
   Flame,
-  Share2,
   Edit3,
   Github,
   Twitter,
-  Linkedin
+  Linkedin,
+  Save,
+  X,
+  GraduationCap
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTaskStore } from '../stores/taskStore';
 import { useHabitStore } from '../stores/habitStore';
+import { getDegreeById } from '../data/degreesData';
 
 export const Profile: React.FC = () => {
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, logout, isAuthenticated, updateProfile } = useAuth();
   const { tasks } = useTaskStore();
   const { habits } = useHabitStore();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: user?.name || '',
+    bio: user?.bio || '',
+    github: user?.github || '',
+    twitter: user?.twitter || '',
+    linkedin: user?.linkedin || '',
+  });
 
   if (!isAuthenticated) return null;
 
+  const selectedDegree = user?.selectedDegree ? getDegreeById(user.selectedDegree) : null;
   const completedTasks = tasks.filter(t => t.status === 'done').length;
   const maxStreak = habits.length > 0 ? Math.max(...habits.map(h => h.streak)) : 0;
 
   const stats = [
     { label: 'Tasks Completed', value: completedTasks.toString(), icon: CheckCircle2, color: 'text-[#DFFF00]' },
-    { label: 'Focus Hours', value: '42.5h', icon: Clock, color: 'text-[#FF00FF]' },
+    { label: 'Focus Hours', value: `${user?.focusHours || 0}h`, icon: Clock, color: 'text-[#FF00FF]' },
     { label: 'Habit Streak', value: `${maxStreak}d`, icon: Flame, color: 'text-[#00FFFF]' },
-    { label: 'Efficiency', value: '94%', icon: TrendingUp, color: 'text-white' },
+    { label: 'Efficiency', value: tasks.length > 0 ? `${Math.round((completedTasks / tasks.length) * 100)}%` : '0%', icon: TrendingUp, color: 'text-white' },
   ];
+
+  const handleSave = async () => {
+    try {
+      await updateProfile(editForm);
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Save profile error:', error);
+    }
+  };
 
   return (
     <div className="space-y-10">
@@ -51,7 +72,7 @@ export const Profile: React.FC = () => {
               {user?.avatar ? (
                 <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
               ) : (
-                <User size={64} className="text-black" />
+                <UserIcon size={64} className="text-black" />
               )}
             </div>
             <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-[#DFFF00] rounded-none flex items-center justify-center border-4 border-black shadow-xl brutal-border">
@@ -65,21 +86,61 @@ export const Profile: React.FC = () => {
               <span>Verified Identity</span>
             </div>
             <h1 className="text-6xl md:text-8xl font-black uppercase tracking-tighter text-white leading-none mb-4">
-              {user?.name?.split(' ')[0] || 'Engineer'} <span className="text-[#DFFF00]">{user?.name?.split(' ')[1] || 'Core'}.</span>
+              {isEditing ? (
+                <input 
+                  type="text"
+                  value={editForm.name}
+                  onChange={e => setEditForm(prev => ({ ...prev, name: e.target.value }))}
+                  className="bg-transparent border-b-2 border-[#DFFF00] outline-none w-full"
+                />
+              ) : (
+                <>
+                  {user?.name?.split(' ')[0] || 'Engineer'} <span className="text-[#DFFF00]">{user?.name?.split(' ')[1] || 'Core'}.</span>
+                </>
+              )}
             </h1>
-            <p className="text-neutral-600 font-black tracking-[0.2em] text-[10px] uppercase">INFRASTRUCTURE_LEVEL_12 // {user?.role === 'admin' ? 'SYS_ADMIN' : 'SR_CANDIDATE'}</p>
+            <p className="text-neutral-600 font-black tracking-[0.2em] text-[10px] uppercase">
+              {selectedDegree ? `${selectedDegree.shortTitle} // ` : ''}INFRASTRUCTURE_LEVEL_12 // {user?.role === 'admin' ? 'SYS_ADMIN' : 'SR_CANDIDATE'}
+            </p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <button className="px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-white/10 transition-all flex items-center gap-2">
-            <Edit3 size={16} />
-            <span>Edit Profile</span>
-          </button>
-          <button className="px-6 py-3 bg-[#DFFF00] text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_20px_rgba(223,255,0,0.2)] flex items-center gap-2">
-            <Share2 size={16} />
-            <span>Share Node</span>
-          </button>
+          {isEditing ? (
+            <>
+              <button 
+                onClick={() => setIsEditing(false)}
+                className="px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-neutral-400 hover:text-white transition-all flex items-center gap-2"
+              >
+                <X size={16} />
+                <span>Cancel</span>
+              </button>
+              <button 
+                onClick={handleSave}
+                className="px-6 py-3 bg-[#DFFF00] text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_20px_rgba(223,255,0,0.2)] flex items-center gap-2"
+              >
+                <Save size={16} />
+                <span>Save Node</span>
+              </button>
+            </>
+          ) : (
+            <>
+              <button 
+                onClick={() => setIsEditing(true)}
+                className="px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-white/10 transition-all flex items-center gap-2"
+              >
+                <Edit3 size={16} />
+                <span>Edit Profile</span>
+              </button>
+              <button 
+                onClick={logout}
+                className="px-6 py-3 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-500/20 transition-all flex items-center gap-2"
+              >
+                <X size={16} />
+                <span>Logout</span>
+              </button>
+            </>
+          )}
         </div>
       </header>
 
@@ -108,9 +169,18 @@ export const Profile: React.FC = () => {
               <Zap className="text-[#DFFF00] mr-4" size={24} />
               Productivity Bio
             </h2>
-            <p className="text-lg md:text-xl text-neutral-400 font-medium leading-relaxed italic border-l-4 border-[#DFFF00] pl-8">
-              "Analytical Systems Architect focused on high-velocity output and scalable productivity frameworks. Currently optimizing deep work cycles and task orchestration."
-            </p>
+            {isEditing ? (
+              <textarea 
+                value={editForm.bio}
+                onChange={e => setEditForm(prev => ({ ...prev, bio: e.target.value }))}
+                className="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white outline-none min-h-[120px]"
+                placeholder="Tell us about your productivity focus..."
+              />
+            ) : (
+              <p className="text-lg md:text-xl text-neutral-400 font-medium leading-relaxed italic border-l-4 border-[#DFFF00] pl-8">
+                &quot;{user?.bio || "Analytical Systems Architect focused on high-velocity output and scalable productivity frameworks. Currently optimizing deep work cycles and task orchestration."}&quot;
+              </p>
+            )}
             <div className="mt-10 flex flex-wrap gap-3">
               {["Deep Work", "Systems Design", "Velocity", "Focus"].map((tag, i) => (
                 <span key={i} className="px-4 py-2 bg-white/5 border border-white/5 rounded-full text-[9px] font-black uppercase tracking-widest text-neutral-500">
@@ -120,6 +190,28 @@ export const Profile: React.FC = () => {
             </div>
           </section>
 
+          {/* Selected Degree Section */}
+          {selectedDegree && (
+            <section className="glass-card p-12 relative overflow-hidden">
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-2xl font-black uppercase tracking-tight text-white flex items-center">
+                  <GraduationCap className="text-[#DFFF00] mr-4" size={24} />
+                  Academic Enrollment
+                </h2>
+                <Link to="/degree" className="text-[10px] font-black uppercase tracking-widest text-[#DFFF00] hover:underline">View Roadmap</Link>
+              </div>
+              <div className="flex items-center gap-6">
+                <div className="w-20 h-20 rounded-2xl bg-white/5 flex items-center justify-center text-4xl border border-white/10">
+                  {selectedDegree.icon}
+                </div>
+                <div>
+                  <h3 className="text-xl font-black uppercase tracking-tight text-white mb-1">{selectedDegree.title}</h3>
+                  <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">{selectedDegree.duration} Program</div>
+                </div>
+              </div>
+            </section>
+          )}
+
           {/* Connected Accounts */}
           <section>
             <h2 className="text-2xl font-black uppercase tracking-tight text-white mb-8 flex items-center">
@@ -128,19 +220,29 @@ export const Profile: React.FC = () => {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {[
-                { label: 'GitHub', icon: Github, value: '@saravanaskv', color: 'hover:text-white' },
-                { label: 'Twitter', icon: Twitter, value: '@saravana_dev', color: 'hover:text-[#1DA1F2]' },
-                { label: 'LinkedIn', icon: Linkedin, value: 'saravana-jenkins', color: 'hover:text-[#0A66C2]' },
+                { id: 'github', label: 'GitHub', icon: Github, value: user?.github || '@saravanaskv', color: 'hover:text-white' },
+                { id: 'twitter', label: 'Twitter', icon: Twitter, value: user?.twitter || '@saravana_dev', color: 'hover:text-[#1DA1F2]' },
+                { id: 'linkedin', label: 'LinkedIn', icon: Linkedin, value: user?.linkedin || 'saravana-jenkins', color: 'hover:text-[#0A66C2]' },
               ].map((account, i) => (
-                <div key={i} className="glass-card p-6 flex items-center justify-between group cursor-pointer">
-                  <div className="flex items-center gap-4">
-                    <account.icon size={20} className={`text-neutral-500 transition-colors ${account.color}`} />
-                    <div>
+                <div key={i} className="glass-card p-6 flex flex-col gap-4 group cursor-pointer">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <account.icon size={20} className={`text-neutral-500 transition-colors ${account.color}`} />
                       <div className="text-[10px] font-black text-white uppercase tracking-tight">{account.label}</div>
-                      <div className="text-[9px] text-neutral-600 font-black uppercase tracking-widest">{account.value}</div>
                     </div>
+                    <ArrowUpRight size={16} className="text-neutral-800 group-hover:text-white transition-colors" />
                   </div>
-                  <ArrowUpRight size={16} className="text-neutral-800 group-hover:text-white transition-colors" />
+                  {isEditing ? (
+                    <input 
+                      type="text"
+                      value={editForm[account.id as keyof typeof editForm]}
+                      onChange={e => setEditForm(prev => ({ ...prev, [account.id]: e.target.value }))}
+                      className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-[10px] text-white outline-none"
+                      placeholder={`Your ${account.label} handle`}
+                    />
+                  ) : (
+                    <div className="text-[9px] text-neutral-600 font-black uppercase tracking-widest">{account.value}</div>
+                  )}
                 </div>
               ))}
             </div>

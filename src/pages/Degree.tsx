@@ -1,28 +1,50 @@
 
 import React from 'react';
 import { motion } from 'motion/react';
-import { GraduationCap, BookOpen, Award, CheckCircle2, Clock, BarChart3 } from 'lucide-react';
+import { GraduationCap, BookOpen, Award, CheckCircle2, Clock, BarChart3, ArrowRight } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { getDegreeById } from '../data/degreesData';
+import { Link } from 'react-router-dom';
 
 export const Degree: React.FC = () => {
+  const { user } = useAuth();
+  const selectedDegree = user?.selectedDegree ? getDegreeById(user.selectedDegree) : null;
+
+  if (!selectedDegree) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-8 text-center">
+        <div className="w-24 h-24 rounded-3xl bg-white/5 flex items-center justify-center text-5xl">🎓</div>
+        <div>
+          <h2 className="text-3xl font-black uppercase tracking-tight text-white mb-2">No Degree Selected</h2>
+          <p className="text-neutral-500 max-w-md mx-auto">
+            You haven&apos;t enrolled in any degree program yet. Explore our curated list of engineering and technology degrees to start your journey.
+          </p>
+        </div>
+        <Link to="/explore" className="px-8 py-4 bg-[#DFFF00] text-black font-black uppercase tracking-widest rounded-xl flex items-center gap-3 hover:scale-105 transition-all">
+          Explore Degrees <ArrowRight size={20} />
+        </Link>
+      </div>
+    );
+  }
+
   const degreeInfo = {
-    title: "Bachelor of Computer Science",
-    institution: "Global Tech University",
-    progress: 75,
-    creditsEarned: 90,
+    title: selectedDegree.title,
+    institution: "India College Guide — Academic Node",
+    progress: 0,
+    creditsEarned: 0,
     creditsRequired: 120,
-    gpa: "3.85",
-    major: "Software Engineering",
-    minor: "Artificial Intelligence",
-    expectedGraduation: "June 2026"
+    gpa: "0.00",
+    major: selectedDegree.shortTitle,
+    minor: "Not Selected",
+    expectedGraduation: "June 2028"
   };
 
-  const requirements = [
-    { name: "Core Computer Science", completed: 8, total: 10, status: "In Progress" },
-    { name: "Mathematics & Logic", completed: 4, total: 4, status: "Completed" },
-    { name: "Software Engineering", completed: 5, total: 6, status: "In Progress" },
-    { name: "General Education", completed: 6, total: 8, status: "In Progress" },
-    { name: "Electives", completed: 3, total: 4, status: "In Progress" }
-  ];
+  const requirements = selectedDegree.domains.map(domain => ({
+    name: domain.title,
+    completed: 0,
+    total: domain.modules.length,
+    status: "Not Started"
+  }));
 
   return (
     <div className="space-y-8">
@@ -212,7 +234,7 @@ export const Degree: React.FC = () => {
           </div>
           <div className="pt-8 border-t border-white/5 mt-8">
             <p className="text-[10px] text-neutral-500 font-medium leading-relaxed italic">
-              "The capacity to learn is a gift; the ability to learn is a skill; the willingness to learn is a choice."
+              &quot;The capacity to learn is a gift; the ability to learn is a skill; the willingness to learn is a choice.&quot;
             </p>
           </div>
         </div>

@@ -3,8 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { 
-  ArrowRight, CheckCircle2, Clock, Activity, 
-  Calendar, Zap, Layout, Target,
+  CheckCircle2, Zap, Layout, Target,
   TrendingUp, Shield, Globe, MousePointer2
 } from 'lucide-react';
 import { Navbar } from '../components/layout/Navbar';
@@ -134,7 +133,7 @@ export const Home: React.FC = () => {
       </section>
 
       {/* Performance Section */}
-      <section id="system" className="py-40 bg-[#050505] border-y border-white/5 relative overflow-hidden">
+      <section id="platform" className="py-40 bg-[#050505] border-y border-white/5 relative overflow-hidden">
         <div className="max-w-[1400px] mx-auto px-6 lg:px-20 grid lg:grid-cols-2 gap-24 items-center relative z-10">
           <div>
             <div className="text-[10px] font-black uppercase tracking-[0.5em] text-[#DFFF00] mb-8">Optimized Learning</div>
@@ -215,7 +214,7 @@ export const Home: React.FC = () => {
       </section>
 
       {/* Final CTA */}
-      <section id="pricing" className="py-48 text-center relative z-10">
+      <section id="support" className="py-48 text-center relative z-10">
         <div className="max-w-4xl mx-auto px-6">
           <h2 className="text-6xl md:text-9xl font-black uppercase tracking-tighter mb-12 leading-[0.85]">
             Start Your <br /><span className="text-[#DFFF00]">Journey</span>

@@ -50,10 +50,10 @@ export const Sidebar: React.FC = () => {
     <motion.aside 
       initial={false}
       animate={{ width: isSidebarOpen ? 240 : 80 }}
-      className="h-screen bg-[#09090b] border-r border-white/5 flex flex-col relative z-50 transition-all duration-300 ease-in-out"
+      className="h-screen bg-[#09090b] dark:bg-[#09090b] light:bg-white border-r border-white/5 light:border-neutral-200 flex flex-col relative z-50 transition-all duration-300 ease-in-out"
     >
       {/* Brand Section */}
-      <Link to="/" className="h-20 flex items-center px-6 border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+      <Link to="/" className="h-20 flex items-center px-6 border-b border-white/5 light:border-neutral-200 hover:bg-white/[0.02] light:hover:bg-neutral-50 transition-colors">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-[#DFFF00] rounded-lg flex items-center justify-center text-black">
             <Command size={20} />
@@ -64,7 +64,7 @@ export const Sidebar: React.FC = () => {
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
-                className="text-white font-black tracking-tighter text-xl"
+                className="text-white dark:text-white light:text-black font-black tracking-tighter text-xl"
               >
                 GUIDE
               </motion.span>
@@ -84,11 +84,11 @@ export const Sidebar: React.FC = () => {
               to={item.path}
               className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all group ${
                 isActive 
-                  ? 'bg-white/5 text-[#DFFF00]' 
-                  : 'text-neutral-500 hover:text-white hover:bg-white/[0.02]'
+                  ? 'bg-white/5 light:bg-neutral-100 text-[#DFFF00]' 
+                  : 'text-neutral-500 hover:text-white dark:hover:text-white light:hover:text-black hover:bg-white/[0.02] light:hover:bg-neutral-50'
               }`}
             >
-              <item.icon size={20} className={isActive ? 'text-[#DFFF00]' : 'group-hover:text-white transition-colors'} />
+              <item.icon size={20} className={isActive ? 'text-[#DFFF00]' : 'group-hover:text-white dark:group-hover:text-white light:group-hover:text-black transition-colors'} />
               {isSidebarOpen && (
                 <span className="text-sm font-bold uppercase tracking-widest">{item.label}</span>
               )}
@@ -98,7 +98,7 @@ export const Sidebar: React.FC = () => {
       </nav>
 
       {/* Bottom Section */}
-      <div className="p-3 border-t border-white/5 space-y-1">
+      <div className="p-3 border-t border-white/5 light:border-neutral-200 space-y-1">
         {bottomItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
@@ -107,11 +107,11 @@ export const Sidebar: React.FC = () => {
               to={item.path}
               className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all group ${
                 isActive 
-                  ? 'bg-white/5 text-[#DFFF00]' 
-                  : 'text-neutral-500 hover:text-white hover:bg-white/[0.02]'
+                  ? 'bg-white/5 light:bg-neutral-100 text-[#DFFF00]' 
+                  : 'text-neutral-500 hover:text-white dark:hover:text-white light:hover:text-black hover:bg-white/[0.02] light:hover:bg-neutral-50'
               }`}
             >
-              <item.icon size={20} className={isActive ? 'text-[#DFFF00]' : 'group-hover:text-white transition-colors'} />
+              <item.icon size={20} className={isActive ? 'text-[#DFFF00]' : 'group-hover:text-white dark:group-hover:text-white light:group-hover:text-black transition-colors'} />
               {isSidebarOpen && (
                 <span className="text-sm font-bold uppercase tracking-widest">{item.label}</span>
               )}
@@ -120,7 +120,7 @@ export const Sidebar: React.FC = () => {
         })}
         <button 
           onClick={() => logout()}
-          className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-neutral-500 hover:text-red-500 hover:bg-red-500/5 transition-all group"
+          className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-neutral-500 hover:text-red-500 hover:bg-red-500/5 light:hover:bg-red-50 transition-all group"
         >
           <LogOut size={20} />
           {isSidebarOpen && (

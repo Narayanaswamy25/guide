@@ -18,7 +18,7 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
     const startDate = new Date(today);
     startDate.setDate(today.getDate() - (12 * 7) - today.getDay());
     
-    let currentDate = new Date(startDate);
+    const currentDate = new Date(startDate);
     
     for (let w = 0; w < 13; w++) {
       const week = [];

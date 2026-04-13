@@ -6,8 +6,6 @@ import {
   Clock, 
   Flame, 
   TrendingUp,
-  ArrowUpRight,
-  Plus,
   Calendar as CalendarIcon,
   MoreHorizontal
 } from 'lucide-react';
@@ -22,6 +20,7 @@ import {
 } from 'recharts';
 import { useTaskStore } from '../stores/taskStore';
 import { useAuth } from '../context/AuthContext';
+import { formatTimestamp } from '../lib/utils';
 
 const data = [
   { name: 'Mon', focus: 4 },
@@ -34,8 +33,13 @@ const data = [
 ];
 
 export const Dashboard: React.FC = () => {
-  const { user, isAuthReady } = useAuth();
-  const { tasks, subscribeToTasks, isLoading } = useTaskStore();
+  const { user } = useAuth();
+  const { tasks, subscribeTasks, isLoading } = useTaskStore();
+
+  useEffect(() => {
+    const unsubscribe = subscribeTasks();
+    return () => unsubscribe();
+  }, [subscribeTasks]);
 
   const completedTasks = tasks.filter(t => t.status === 'done').length;
   const pendingTasks = tasks.filter(t => t.status !== 'done').length;
@@ -142,8 +146,8 @@ export const Dashboard: React.FC = () => {
               <option>Last 30 Days</option>
             </select>
           </div>
-          <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-[300px] w-full min-h-[300px]">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <AreaChart data={data}>
                 <defs>
                   <linearGradient id="colorFocus" x1="0" y1="0" x2="0" y2="1">
@@ -199,11 +203,11 @@ export const Dashboard: React.FC = () => {
                     {task.title}
                   </div>
                   <div className="text-[9px] text-neutral-600 font-black uppercase tracking-widest mt-1">
-                    {task.status} // {task.priority}
+                    {task.status} {'//'} {task.priority}
                   </div>
                 </div>
                 <div className="text-[8px] text-neutral-800 font-black uppercase tracking-widest">
-                  {new Date(task.updatedAt).toLocaleDateString()}
+                  {formatTimestamp(task.updatedAt)}
                 </div>
               </div>
             ))}

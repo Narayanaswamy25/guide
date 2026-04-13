@@ -1,19 +1,85 @@
 import { create } from 'zustand';
-import api from '../lib/api';
+import { 
+  collection, 
+  query, 
+  where, 
+  onSnapshot, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  doc, 
+  serverTimestamp,
+  orderBy,
+  increment
+} from 'firebase/firestore';
+import { db, auth } from '../lib/firebase';
 
 export interface Habit {
   id: string;
+  userId: string;
   name: string;
   streak: number;
   completedToday: boolean;
-  createdAt: string;
+  lastCompletedDate: string | null;
+  createdAt: unknown;
+}
+
+enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+interface FirestoreErrorInfo {
+  error: string;
+  operationType: OperationType;
+  path: string | null;
+  authInfo: {
+    userId: string | undefined;
+    email: string | null | undefined;
+    emailVerified: boolean | undefined;
+    isAnonymous: boolean | undefined;
+    tenantId: string | null | undefined;
+    providerInfo: {
+      providerId: string;
+      displayName: string | null;
+      email: string | null;
+      photoUrl: string | null;
+    }[];
+  }
+}
+
+function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: auth.currentUser?.uid,
+      email: auth.currentUser?.email,
+      emailVerified: auth.currentUser?.emailVerified,
+      isAnonymous: auth.currentUser?.isAnonymous,
+      tenantId: auth.currentUser?.tenantId,
+      providerInfo: auth.currentUser?.providerData.map(provider => ({
+        providerId: provider.providerId,
+        displayName: provider.displayName,
+        email: provider.email,
+        photoUrl: provider.photoURL
+      })) || []
+    },
+    operationType,
+    path
+  };
+  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  throw new Error(JSON.stringify(errInfo));
 }
 
 interface HabitState {
   habits: Habit[];
   isLoading: boolean;
   error: string | null;
-  fetchHabits: () => Promise<void>;
+  subscribeHabits: () => () => void;
   addHabit: (name: string) => Promise<void>;
   toggleHabit: (id: string) => Promise<void>;
   deleteHabit: (id: string) => Promise<void>;
@@ -24,48 +90,73 @@ export const useHabitStore = create<HabitState>((set, get) => ({
   isLoading: false,
   error: null,
 
-  fetchHabits: async () => {
+  subscribeHabits: () => {
+    const userId = auth.currentUser?.uid;
+    if (!userId) return () => {};
+
     set({ isLoading: true });
-    try {
-      const res = await api.get('/habits');
-      set({ habits: res.data, error: null });
-    } catch (error) {
-      set({ error: 'Failed to fetch habits', isLoading: false });
-    } finally {
-      set({ isLoading: false });
-    }
+    const q = query(
+      collection(db, 'habits'), 
+      where('userId', '==', userId),
+      orderBy('createdAt', 'desc')
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const habits = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as Habit[];
+      set({ habits, isLoading: false, error: null });
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'habits');
+    });
+
+    return unsubscribe;
   },
 
   addHabit: async (name) => {
+    const userId = auth.currentUser?.uid;
+    if (!userId) return;
+
     try {
-      const res = await api.post('/habits', { name });
-      set((state) => ({ habits: [...state.habits, res.data] }));
+      await addDoc(collection(db, 'habits'), {
+        name,
+        userId,
+        streak: 0,
+        completedToday: false,
+        lastCompletedDate: null,
+        createdAt: serverTimestamp(),
+      });
     } catch (error) {
-      console.error('Add habit error', error);
+      handleFirestoreError(error, OperationType.CREATE, 'habits');
     }
   },
 
   toggleHabit: async (id) => {
     try {
-      const res = await api.put(`/habits/${id}/toggle`);
-      set((state) => ({
-        habits: state.habits.map(habit => habit.id === id ? res.data : habit)
-      }));
+      const habit = get().habits.find(h => h.id === id);
+      if (!habit) return;
+
+      const habitRef = doc(db, 'habits', id);
+      const today = new Date().toISOString().split('T')[0];
+      const isCompleting = !habit.completedToday;
+
+      await updateDoc(habitRef, {
+        completedToday: isCompleting,
+        streak: isCompleting ? increment(1) : increment(-1),
+        lastCompletedDate: isCompleting ? today : habit.lastCompletedDate,
+      });
     } catch (error) {
-      console.error('Toggle habit error', error);
+      handleFirestoreError(error, OperationType.UPDATE, `habits/${id}`);
     }
   },
 
   deleteHabit: async (id) => {
     try {
-      await api.delete(`/habits/${id}`);
-      set((state) => ({ habits: state.habits.filter(habit => habit.id !== id) }));
+      await deleteDoc(doc(db, 'habits', id));
     } catch (error) {
-      console.error('Delete habit error', error);
+      handleFirestoreError(error, OperationType.DELETE, `habits/${id}`);
     }
   },
 }));
-
-// Poll (fetch on mount)
-useHabitStore.getState().fetchHabits();
 

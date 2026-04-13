@@ -26,7 +26,7 @@ export const QuizResult: React.FC = () => {
     );
   }
 
-  const { score, answers, questions, domainTitle } = state;
+  const { score, answers, questions } = state;
   const total = questions.length;
   const pct = Math.round((score / total) * 100);
 

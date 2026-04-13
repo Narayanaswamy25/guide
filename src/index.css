@@ -19,11 +19,19 @@
   }
   
   .glass-card {
-    @apply bg-white/[0.02] backdrop-blur-2xl border border-white/[0.05] shadow-[0_8px_32px_0_rgba(0,0,0,0.8)] rounded-2xl;
+    @apply bg-white/[0.02] backdrop-blur-2xl border border-white/[0.05] shadow-[0_8px_32px_0_rgba(0,0,0,0.8)] rounded-2xl transition-all duration-300;
+  }
+
+  html.light .glass-card {
+    @apply bg-white border-neutral-200 shadow-sm;
   }
 
   .glass-surface {
-    @apply bg-white/[0.02] border border-white/[0.05] backdrop-blur-2xl rounded-2xl;
+    @apply bg-white/[0.02] border border-white/[0.05] backdrop-blur-2xl rounded-2xl transition-all duration-300;
+  }
+
+  html.light .glass-surface {
+    @apply bg-neutral-50 border-neutral-200;
   }
 
   .btn-primary {
@@ -34,8 +42,16 @@
     @apply px-6 py-3 bg-transparent border border-white/10 text-white rounded-xl font-bold text-[12px] uppercase tracking-[0.1em] hover:bg-white/5 transition-all active:scale-95 disabled:opacity-50;
   }
 
+  html.light .btn-secondary {
+    @apply border-neutral-200 text-neutral-900 hover:bg-neutral-50;
+  }
+
   .input-field {
     @apply w-full px-4 py-3 bg-white/[0.02] border border-white/10 rounded-xl text-white placeholder:text-neutral-600 focus:outline-none focus:border-[#DFFF00] transition-all;
+  }
+
+  html.light .input-field {
+    @apply bg-neutral-50 border-neutral-200 text-black placeholder:text-neutral-400;
   }
 
   .bento-grid {

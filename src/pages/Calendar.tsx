@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   format, 
   addMonths, 
@@ -11,7 +11,6 @@ import {
   isSameMonth, 
   isSameDay, 
   addDays, 
-  eachDayOfInterval 
 } from 'date-fns';
 import { 
   ChevronLeft, 
@@ -20,19 +19,19 @@ import {
   Calendar as CalendarIcon,
   Clock,
   MoreHorizontal,
-  Search,
-  Filter,
-  CheckCircle2,
-  Circle
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
 
 import { useTaskStore } from '../stores/taskStore';
 
 export const Calendar: React.FC = () => {
-  const { tasks } = useTaskStore();
+  const { tasks, subscribeTasks } = useTaskStore();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
+
+  useEffect(() => {
+    const unsubscribe = subscribeTasks();
+    return () => unsubscribe();
+  }, [subscribeTasks]);
 
   const events = tasks.map(task => ({
     id: task.id,

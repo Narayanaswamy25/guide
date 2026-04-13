@@ -5,26 +5,26 @@ import {
   Flame, 
   CheckCircle2, 
   Plus, 
-  MoreHorizontal, 
   TrendingUp, 
   Zap, 
   Target,
-  Calendar as CalendarIcon,
-  Clock,
   Activity,
   X
 } from 'lucide-react';
 import { useHabitStore } from '../stores/habitStore';
-import { useAuth } from '../context/AuthContext';
 
 const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
 export const Habits: React.FC = () => {
-  const { habits, addHabit, toggleHabit, deleteHabit, isLoading } = useHabitStore();
-  const { user, isAuthReady } = useAuth();
+  const { habits, addHabit, toggleHabit, deleteHabit, isLoading, subscribeHabits } = useHabitStore();
   const [isAdding, setIsAdding] = useState(false);
   const [newHabitName, setNewHabitName] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    const unsubscribe = subscribeHabits();
+    return () => unsubscribe();
+  }, [subscribeHabits]);
 
   const filteredHabits = habits.filter(habit => 
     habit.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -212,7 +212,6 @@ export const Habits: React.FC = () => {
             <div className="grid grid-cols-7 gap-2 mb-8">
               {days.map((day, idx) => {
                 // For demo purposes, we'll show previous days as completed if they are part of the streak
-                const isPastDay = idx < 6;
                 const isCurrentDay = idx === 6;
                 const isCompleted = isCurrentDay ? habit.completedToday : (idx >= 6 - (habit.streak % 7));
                 

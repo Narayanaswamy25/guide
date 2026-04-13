@@ -17,6 +17,16 @@ export const Navbar: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const handleAnchorClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    if (location.pathname === '/') {
+      e.preventDefault();
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  };
+
   return (
     <nav 
       className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 ${
@@ -36,26 +46,29 @@ export const Navbar: React.FC = () => {
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-12">
-          <a
-            href="/"
+          <Link
+            to="/"
             className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400 hover:text-[#DFFF00] transition-colors"
           >
             Home
-          </a>
+          </Link>
           <a
             href="#features"
+            onClick={(e) => handleAnchorClick(e, 'features')}
             className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400 hover:text-[#DFFF00] transition-colors"
           >
             Features
           </a>
           <a
             href="#platform"
+            onClick={(e) => handleAnchorClick(e, 'platform')}
             className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400 hover:text-[#DFFF00] transition-colors"
           >
             Platform
           </a>
           <a
             href="#support"
+            onClick={(e) => handleAnchorClick(e, 'support')}
             className="text-[10px] font-black uppercase tracking-[0.3em] text-neutral-400 hover:text-[#DFFF00] transition-colors"
           >
             Support
@@ -90,30 +103,30 @@ export const Navbar: React.FC = () => {
             exit={{ opacity: 0, y: -20 }}
             className="absolute top-full left-0 right-0 bg-black border-b border-white/5 p-8 flex flex-col gap-8 md:hidden"
           >
-            <a
-              href="/"
+            <Link
+              to="/"
               onClick={() => setIsMobileMenuOpen(false)}
               className="text-2xl font-black uppercase tracking-tighter text-white"
             >
               Home
-            </a>
+            </Link>
             <a
               href="#features"
-              onClick={() => setIsMobileMenuOpen(false)}
+              onClick={(e) => { handleAnchorClick(e, 'features'); setIsMobileMenuOpen(false); }}
               className="text-2xl font-black uppercase tracking-tighter text-white"
             >
               Features
             </a>
             <a
               href="#platform"
-              onClick={() => setIsMobileMenuOpen(false)}
+              onClick={(e) => { handleAnchorClick(e, 'platform'); setIsMobileMenuOpen(false); }}
               className="text-2xl font-black uppercase tracking-tighter text-white"
             >
               Platform
             </a>
             <a
               href="#support"
-              onClick={() => setIsMobileMenuOpen(false)}
+              onClick={(e) => { handleAnchorClick(e, 'support'); setIsMobileMenuOpen(false); }}
               className="text-2xl font-black uppercase tracking-tighter text-white"
             >
               Support

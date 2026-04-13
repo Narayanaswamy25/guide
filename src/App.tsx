@@ -2,6 +2,7 @@
 import React from 'react';
 import { HashRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { AppLayout } from './components/layout/AppLayout';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Home } from './pages/Home';
@@ -83,6 +84,9 @@ const AnimatedRoutes: React.FC = () => {
       <Route path="/explore/:degreeId/:domainId/quiz" element={<ProtectedRoute><QuizPage /></ProtectedRoute>} />
       <Route path="/explore/:degreeId/:domainId/result" element={<ProtectedRoute><QuizResult /></ProtectedRoute>} />
       <Route path="/extra-skills" element={<ProtectedRoute><ExtraSkills /></ProtectedRoute>} />
+      <Route path="/platform" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/features" element={<Navigate to="/" replace />} />
+      <Route path="/support" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };
@@ -90,13 +94,15 @@ const AnimatedRoutes: React.FC = () => {
 function App() {
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <Router>
-          <div className="min-h-screen bg-[#000000] selection:bg-[#DFFF00] selection:text-black">
-            <AnimatedRoutes />
-          </div>
-        </Router>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <Router>
+            <div className="min-h-screen bg-black dark:bg-black light:bg-white selection:bg-[#DFFF00] selection:text-black transition-colors duration-300">
+              <AnimatedRoutes />
+            </div>
+          </Router>
+        </AuthProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }

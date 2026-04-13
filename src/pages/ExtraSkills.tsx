@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Link } from 'react-router-dom';
 import {
   Mic, BookOpen, Users, FileText, MessageSquare, Brain, Star,
-  Clock, PlayCircle, ChevronDown, ChevronUp, ExternalLink
+  Clock, ExternalLink
 } from 'lucide-react';
 
 interface SkillModule {
@@ -141,17 +140,8 @@ const skillModules: SkillModule[] = [
 
 export const ExtraSkills: React.FC = () => {
   const [activeSkill, setActiveSkill] = useState<string>(skillModules[0].id);
-  const [expandedTips, setExpandedTips] = useState<Set<string>>(new Set());
 
   const active = skillModules.find(s => s.id === activeSkill)!;
-
-  const toggleTips = (id: string) => {
-    setExpandedTips(prev => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
 
   return (
     <div className="space-y-10">
@@ -162,7 +152,7 @@ export const ExtraSkills: React.FC = () => {
           Beyond<br /><span className="text-[#c8ff00]">Technical.</span>
         </h1>
         <p className="mt-4 text-neutral-400 text-sm max-w-2xl leading-relaxed">
-          Technical skills get you the interview. <strong className="text-white">Soft skills get you the job.</strong> These modules prepare you for campus placements, HR rounds, group discussions, and professional life in India's tech industry.
+          Technical skills get you the interview. <strong className="text-white">Soft skills get you the job.</strong> These modules prepare you for campus placements, HR rounds, group discussions, and professional life in India&apos;s tech industry.
         </p>
       </div>
 

@@ -2,9 +2,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  BookOpen, Clock, Calendar, CheckCircle2, 
+  BookOpen, Clock, Calendar, 
   AlertCircle, FileText, Video, MessageSquare,
-  Search, Filter, Plus, MoreVertical, Star, ArrowRight
+  Search, Plus, MoreVertical, Star, ArrowRight
 } from 'lucide-react';
 
 interface Course {
@@ -104,7 +104,7 @@ export const Courses: React.FC = () => {
           {['active', 'completed', 'all'].map((f) => (
             <button
               key={f}
-              onClick={() => setFilter(f as any)}
+              onClick={() => setFilter(f as 'all' | 'active' | 'completed')}
               className={`px-6 py-2 rounded-lg font-black text-[10px] uppercase tracking-widest transition-all ${
                 filter === f ? 'bg-[#DFFF00] text-black shadow-[0_0_15px_rgba(223,255,0,0.3)]' : 'text-neutral-500 hover:text-white'
               }`}

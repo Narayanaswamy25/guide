@@ -8,13 +8,10 @@ import {
   Plus, 
   MoreVertical,
   Calendar,
-  User,
-  Tag,
   Clock,
   CheckCircle2,
   Circle,
-  AlertCircle,
-  ArrowUpRight
+  AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -31,7 +28,6 @@ import {
   useDroppable
 } from '@dnd-kit/core';
 import { 
-  arrayMove, 
   SortableContext, 
   sortableKeyboardCoordinates, 
   verticalListSortingStrategy,
@@ -41,21 +37,21 @@ import { CSS } from '@dnd-kit/utilities';
 import { useTaskStore, Task, TaskStatus, TaskPriority } from '../stores/taskStore';
 import { useAuth } from '../context/AuthContext';
 
-const COLUMNS: { id: TaskStatus; label: string; color: string; icon?: any }[] = [
+const COLUMNS: { id: TaskStatus; label: string; color: string; icon?: React.FC<React.SVGProps<SVGSVGElement>> }[] = [
   { id: 'backlog', label: 'Backlog', color: 'text-neutral-500', icon: Circle },
   { id: 'todo', label: 'To Do', color: 'text-[#00FFFF]', icon: ListIcon },
   { id: 'in-progress', label: 'In Progress', color: 'text-[#FF00FF]', icon: Clock },
   { id: 'done', label: 'Done', color: 'text-[#DFFF00]', icon: CheckCircle2 },
 ];
 
-const PRIORITY_ICONS: Record<TaskPriority, any> = {
+const PRIORITY_ICONS: Record<TaskPriority, React.FC<React.SVGProps<SVGSVGElement>>> = {
   low: Circle,
   medium: Clock,
   high: AlertCircle,
   urgent: FlameIcon,
 };
 
-function FlameIcon(props: any) {
+function FlameIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg 
       {...props}
@@ -146,8 +142,7 @@ const TaskColumn: React.FC<{
   title: string;
   tasks: Task[];
   color: string;
-  icon: any;
-}> = ({ id, title, tasks, color, icon: Icon }) => {
+}> = ({ id, title, tasks, color }) => {
   const { setNodeRef } = useDroppable({
     id: id,
   });
@@ -204,9 +199,14 @@ export const Tasks: React.FC = () => {
     dueDate: ''
   });
 
-  const { tasks, addTask, moveTask, isLoading } = useTaskStore();
-  const { user, isAuthReady } = useAuth();
+  const { tasks, addTask, moveTask, isLoading, subscribeTasks } = useTaskStore();
+  const { user } = useAuth();
   const [activeId, setActiveId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = subscribeTasks();
+    return () => unsubscribe();
+  }, [subscribeTasks]);
 
   const filteredTasks = tasks.filter(task => 
     task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -472,7 +472,6 @@ export const Tasks: React.FC = () => {
                     title={column.label}
                     color={column.color}
                     tasks={filteredTasks.filter(t => t.status === column.id)}
-                    icon={column.icon || Circle}
                   />
                 ))}
               </div>
