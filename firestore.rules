@@ -1,42 +1,43 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
     // ===============================================================
     // Assumed Data Model
     // ===============================================================
     //
     // Collection: users
-    // Document ID: userId (Firebase Auth UID)
+    // Document ID: {userId}
     // Fields:
-    //   - uid: string (required)
+    //   - id: string (required)
     //   - name: string (required)
-    //   - email: string (required)
-    //   - role: string (required, ['student', 'admin'])
+    //   - email: string (required, email format)
+    //   - role: string (required, enum: ['student', 'admin'])
+    //   - selectedDegree: string (optional)
     //   - avatar: string (optional)
     //   - createdAt: timestamp (required)
     //
     // Collection: tasks
-    // Document ID: taskId
+    // Document ID: {taskId}
     // Fields:
-    //   - title: string (required, 1-100 chars)
-    //   - description: string (optional, 0-500 chars)
-    //   - status: string (required, ['backlog', 'todo', 'in-progress', 'done', 'canceled'])
-    //   - priority: string (required, ['low', 'medium', 'high', 'urgent'])
-    //   - dueDate: timestamp (optional)
-    //   - assigneeId: string (required, matches owner)
-    //   - projectId: string (optional)
-    //   - tags: list (optional)
+    //   - id: string (required)
+    //   - userId: string (required)
+    //   - title: string (required)
+    //   - description: string (optional)
+    //   - status: string (required, enum: ['backlog', 'todo', 'in-progress', 'done', 'canceled'])
+    //   - priority: string (required, enum: ['low', 'medium', 'high', 'urgent'])
+    //   - dueDate: string (optional, ISO 8601)
     //   - createdAt: timestamp (required)
     //   - updatedAt: timestamp (required)
     //
     // Collection: habits
-    // Document ID: habitId
+    // Document ID: {habitId}
     // Fields:
-    //   - name: string (required, 1-50 chars)
-    //   - streak: number (required, >= 0)
-    //   - completedToday: bool (required)
-    //   - userId: string (required, matches owner)
+    //   - id: string (required)
+    //   - userId: string (required)
+    //   - name: string (required)
+    //   - streak: number (required)
+    //   - completedToday: boolean (required)
+    //   - lastCompletedDate: string (optional, YYYY-MM-DD)
     //   - createdAt: timestamp (required)
     //
     // ===============================================================
@@ -54,9 +55,9 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return isAuthenticated() && 
+      return isAuthenticated() &&
         (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
-         (request.auth.token.email == "saravanaskv10@gmail.com" && request.auth.token.email_verified == true));
+          (request.auth.token.email == "swamykrish25@gmail.com" && request.auth.token.email_verified == true));
     }
 
     function isValidEmail(email) {
@@ -72,30 +73,27 @@ service cloud.firestore {
     // ===============================================================
 
     function isValidUser(data) {
-      return data.id is string &&
+      return hasOnlyAllowedFields(['id', 'name', 'email', 'role', 'selectedDegree', 'avatar', 'createdAt']) &&
+             data.id is string && data.id.size() > 0 &&
              data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
-             isValidEmail(data.email) &&
-             data.role in ['student', 'admin'] &&
-             (data.createdAt is timestamp || data.createdAt is string);
+             data.email is string && isValidEmail(data.email) &&
+             data.role in ['student', 'admin'];
     }
 
     function isValidTask(data) {
-      return data.title is string && data.title.size() > 0 && data.title.size() <= 100 &&
-             (!('description' in data) || (data.description is string && data.description.size() <= 500)) &&
+      return hasOnlyAllowedFields(['id', 'userId', 'title', 'description', 'status', 'priority', 'dueDate', 'createdAt', 'updatedAt', 'assigneeId', 'projectId', 'tags']) &&
+             data.userId is string && data.userId == request.auth.uid &&
+             data.title is string && data.title.size() > 0 && data.title.size() < 200 &&
              data.status in ['backlog', 'todo', 'in-progress', 'done', 'canceled'] &&
-             data.priority in ['low', 'medium', 'high', 'urgent'] &&
-             (!('dueDate' in data) || data.dueDate is timestamp || data.dueDate == null) &&
-             data.assigneeId is string &&
-             data.createdAt is timestamp &&
-             data.updatedAt is timestamp;
+             data.priority in ['low', 'medium', 'high', 'urgent'];
     }
 
     function isValidHabit(data) {
-      return data.name is string && data.name.size() > 0 && data.name.size() <= 50 &&
-             data.streak is number && data.streak >= 0 &&
-             data.completedToday is bool &&
-             data.userId is string &&
-             data.createdAt is timestamp;
+      return hasOnlyAllowedFields(['id', 'userId', 'name', 'streak', 'completedToday', 'lastCompletedDate', 'createdAt']) &&
+             data.userId is string && data.userId == request.auth.uid &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.streak is int &&
+             data.completedToday is bool;
     }
 
     // ===============================================================
@@ -103,39 +101,23 @@ service cloud.firestore {
     // ===============================================================
 
     match /users/{userId} {
-      allow read: if isAuthenticated();
-      allow create: if isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == 'student' || isAdmin());
-      allow update: if isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == resource.data.role || isAdmin());
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && isValidUser(request.resource.data) && request.resource.data.role == 'student';
+      allow update: if (isOwner(userId) && isValidUser(request.resource.data) && request.resource.data.role == resource.data.role) || isAdmin();
     }
 
     match /tasks/{taskId} {
-      allow read: if isAuthenticated() && (resource.data.assigneeId == request.auth.uid || isAdmin());
-      allow create: if isAuthenticated() && isValidTask(request.resource.data) && request.resource.data.assigneeId == request.auth.uid;
-      allow update: if isAuthenticated() && isValidTask(request.resource.data) && resource.data.assigneeId == request.auth.uid && request.resource.data.assigneeId == request.auth.uid;
-      allow delete: if isAuthenticated() && (resource.data.assigneeId == request.auth.uid || isAdmin());
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && isValidTask(request.resource.data);
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid && isValidTask(request.resource.data);
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }
 
     match /habits/{habitId} {
-      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
-      allow create: if isAuthenticated() && isValidHabit(request.resource.data) && request.resource.data.userId == request.auth.uid;
-      allow update: if isAuthenticated() && isValidHabit(request.resource.data) && resource.data.userId == request.auth.uid && request.resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
-    }
-
-    match /courses/{courseId} {
-      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
-      allow create, update: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
-    }
-
-    match /degree/{degreeId} {
-      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
-      allow create, update: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
-    }
-
-    match /{path=**} {
-      allow read, write: if false;
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && isValidHabit(request.resource.data);
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid && isValidHabit(request.resource.data);
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }
   }
 }

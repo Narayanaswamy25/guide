@@ -1,10 +1,17 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@variant light (&:where(.light, .light *));
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-esta-lime: #DFFF00;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
 
 @layer base {
   body {
-    @apply bg-[#000000] text-white antialiased selection:bg-[#DFFF00] selection:text-black;
+    @apply bg-black text-white dark:bg-black dark:text-white light:bg-white light:text-neutral-900 antialiased selection:bg-[#DFFF00] selection:text-black transition-colors duration-300;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 }
@@ -59,7 +66,7 @@
   }
 
   .bento-item {
-    @apply glass-card p-6 flex flex-col justify-between hover:border-[#DFFF00]/20 transition-all duration-300;
+    @apply bg-white/[0.02] backdrop-blur-2xl border border-white/[0.05] shadow-[0_8px_32px_0_rgba(0,0,0,0.8)] rounded-2xl p-6 flex flex-col justify-between hover:border-[#DFFF00]/20 transition-all duration-300;
   }
 }
 

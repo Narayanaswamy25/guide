@@ -27,8 +27,13 @@ import { useTaskStore } from '../stores/taskStore';
 import { useHabitStore } from '../stores/habitStore';
 
 export const Analytics: React.FC = () => {
+  const [isMounted, setIsMounted] = React.useState(false);
   const { tasks, isLoading: tasksLoading } = useTaskStore();
   const { habits, isLoading: habitsLoading } = useHabitStore();
+
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const isLoading = tasksLoading || habitsLoading;
 
@@ -173,35 +178,39 @@ export const Analytics: React.FC = () => {
               </div>
             </div>
           </div>
-          <div className="h-[300px] w-full min-h-[300px]">
-            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-              <BarChart data={completionData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-                <XAxis 
-                  dataKey="name" 
-                  stroke="#ffffff20" 
-                  fontSize={10} 
-                  tickLine={false} 
-                  axisLine={false}
-                  dy={10}
-                />
-                <YAxis hide />
-                <Tooltip 
-                  cursor={{ fill: 'rgba(255,255,255,0.02)' }}
-                  contentStyle={{ 
-                    backgroundColor: '#09090b', 
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    borderRadius: '12px',
-                    fontSize: '10px',
-                    fontWeight: '900',
-                    textTransform: 'uppercase'
-                  }}
-                  itemStyle={{ color: '#DFFF00' }}
-                />
-                <Bar dataKey="completed" fill="#DFFF00" radius={[4, 4, 0, 0]} barSize={40} />
-                <Bar dataKey="target" fill="rgba(255,255,255,0.05)" radius={[4, 4, 0, 0]} barSize={40} />
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="h-[300px] w-full min-h-[300px] relative">
+            <div className="absolute inset-0">
+              {isMounted && (
+                <ResponsiveContainer width="100%" height="100%" debounce={100}>
+                  <BarChart data={completionData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+                    <XAxis 
+                      dataKey="name" 
+                      stroke="#ffffff20" 
+                      fontSize={10} 
+                      tickLine={false} 
+                      axisLine={false}
+                      dy={10}
+                    />
+                    <YAxis hide />
+                    <Tooltip 
+                      cursor={{ fill: 'rgba(255,255,255,0.02)' }}
+                      contentStyle={{ 
+                        backgroundColor: '#09090b', 
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: '12px',
+                        fontSize: '10px',
+                        fontWeight: '900',
+                        textTransform: 'uppercase'
+                      }}
+                      itemStyle={{ color: '#DFFF00' }}
+                    />
+                    <Bar dataKey="completed" fill="#DFFF00" radius={[4, 4, 0, 0]} barSize={40} />
+                    <Bar dataKey="target" fill="rgba(255,255,255,0.05)" radius={[4, 4, 0, 0]} barSize={40} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
           </div>
         </div>
 
@@ -209,33 +218,37 @@ export const Analytics: React.FC = () => {
         <div className="lg:col-span-4 glass-card p-8">
           <h2 className="text-xl font-black uppercase tracking-tight text-white mb-8">Priority Mix</h2>
           <div className="h-[250px] w-full relative min-h-[250px]">
-            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-              <PieChart>
-                <Pie
-                  data={priorityData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
-                  paddingAngle={8}
-                  dataKey="value"
-                >
-                  {priorityData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#09090b', 
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    borderRadius: '12px',
-                    fontSize: '10px',
-                    fontWeight: '900',
-                    textTransform: 'uppercase'
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+            <div className="absolute inset-0">
+              {isMounted && (
+                <ResponsiveContainer width="100%" height="100%" debounce={100}>
+                  <PieChart>
+                    <Pie
+                      data={priorityData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={80}
+                      paddingAngle={8}
+                      dataKey="value"
+                    >
+                      {priorityData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: '#09090b', 
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: '12px',
+                        fontSize: '10px',
+                        fontWeight: '900',
+                        textTransform: 'uppercase'
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              )}
+            </div>
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
               <div className="text-2xl font-black text-white">{tasks.length}</div>
               <div className="text-[8px] text-neutral-600 font-black uppercase tracking-widest">Total Tasks</div>
@@ -266,46 +279,50 @@ export const Analytics: React.FC = () => {
             Peak: 14:00 (95%)
           </div>
         </div>
-        <div className="h-[200px] w-full min-h-[200px]">
-          <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-            <AreaChart data={focusData}>
-              <defs>
-                <linearGradient id="colorFocusAnalytics" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#FF00FF" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#FF00FF" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-              <XAxis 
-                dataKey="time" 
-                stroke="#ffffff20" 
-                fontSize={10} 
-                tickLine={false} 
-                axisLine={false}
-                dy={10}
-              />
-              <YAxis hide />
-              <Tooltip 
-                contentStyle={{ 
-                  backgroundColor: '#09090b', 
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: '12px',
-                  fontSize: '10px',
-                  fontWeight: '900',
-                  textTransform: 'uppercase'
-                }}
-                itemStyle={{ color: '#FF00FF' }}
-              />
-              <Area 
-                type="monotone" 
-                dataKey="focus" 
-                stroke="#FF00FF" 
-                strokeWidth={3}
-                fillOpacity={1} 
-                fill="url(#colorFocusAnalytics)" 
-              />
-            </AreaChart>
-          </ResponsiveContainer>
+        <div className="h-[200px] w-full min-h-[200px] relative">
+          <div className="absolute inset-0">
+            {isMounted && (
+              <ResponsiveContainer width="100%" height="100%" debounce={100}>
+                <AreaChart data={focusData}>
+                  <defs>
+                    <linearGradient id="colorFocusAnalytics" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#FF00FF" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#FF00FF" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+                  <XAxis 
+                    dataKey="time" 
+                    stroke="#ffffff20" 
+                    fontSize={10} 
+                    tickLine={false} 
+                    axisLine={false}
+                    dy={10}
+                  />
+                  <YAxis hide />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: '#09090b', 
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: '12px',
+                      fontSize: '10px',
+                      fontWeight: '900',
+                      textTransform: 'uppercase'
+                    }}
+                    itemStyle={{ color: '#FF00FF' }}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="focus" 
+                    stroke="#FF00FF" 
+                    strokeWidth={3}
+                    fillOpacity={1} 
+                    fill="url(#colorFocusAnalytics)" 
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
+          </div>
         </div>
       </section>
     </div>

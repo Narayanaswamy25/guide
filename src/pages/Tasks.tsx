@@ -38,10 +38,10 @@ import { useTaskStore, Task, TaskStatus, TaskPriority } from '../stores/taskStor
 import { useAuth } from '../context/AuthContext';
 
 const COLUMNS: { id: TaskStatus; label: string; color: string; icon?: React.FC<React.SVGProps<SVGSVGElement>> }[] = [
-  { id: 'backlog', label: 'Backlog', color: 'text-neutral-500', icon: Circle },
-  { id: 'todo', label: 'To Do', color: 'text-[#00FFFF]', icon: ListIcon },
-  { id: 'in-progress', label: 'In Progress', color: 'text-[#FF00FF]', icon: Clock },
-  { id: 'done', label: 'Done', color: 'text-[#DFFF00]', icon: CheckCircle2 },
+  { id: 'BACKLOG', label: 'Backlog', color: 'text-neutral-500', icon: Circle },
+  { id: 'TODO', label: 'To Do', color: 'text-[#00FFFF]', icon: ListIcon },
+  { id: 'IN_PROGRESS', label: 'In Progress', color: 'text-[#FF00FF]', icon: Clock },
+  { id: 'DONE', label: 'Done', color: 'text-[#DFFF00]', icon: CheckCircle2 },
 ];
 
 const PRIORITY_ICONS: Record<TaskPriority, React.FC<React.SVGProps<SVGSVGElement>>> = {
@@ -98,7 +98,7 @@ const SortableTaskCard: React.FC<SortableTaskCardProps> = ({ task }) => {
       style={style}
       {...attributes}
       {...listeners}
-      className="p-5 bg-white/[0.02] border border-white/5 rounded-2xl hover:border-[#DFFF00]/30 transition-all group cursor-grab active:cursor-grabbing mb-4"
+      className="p-6 bg-black/40 backdrop-blur-md border border-white/5 rounded-[2rem] hover:border-[#DFFF00]/40 transition-all group cursor-grab active:cursor-grabbing mb-6 relative z-10 shadow-xl"
     >
       <div className="flex items-center justify-between mb-4">
         <div className={`px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest flex items-center gap-1 ${
@@ -148,8 +148,11 @@ const TaskColumn: React.FC<{
   });
 
   return (
-    <div className="flex flex-col min-h-[500px]">
-      <div className="flex items-center justify-between mb-6 px-2">
+    <div className="flex flex-col min-h-[850px] bg-white/[0.01] border border-white/[0.03] rounded-[3rem] p-8 shadow-2xl relative group/column">
+      {/* Vertical Guide Line */}
+      <div className="absolute left-1/2 top-32 bottom-12 w-px border-l border-dashed border-white/5 -translate-x-1/2 pointer-events-none"></div>
+
+      <div className="flex items-center justify-between mb-12 px-4 py-4 bg-white/[0.03] rounded-[2rem] border border-white/[0.05] relative z-10 backdrop-blur-md">
         <div className="flex items-center gap-3">
           <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${color}`}>
             {title}
@@ -177,8 +180,11 @@ const TaskColumn: React.FC<{
           ))}
           
           {tasks.length === 0 && (
-            <div className="h-40 border border-dashed border-white/5 rounded-2xl flex items-center justify-center text-[10px] font-black uppercase tracking-widest text-neutral-800">
-              Drop tasks here
+            <div className="h-64 border border-dashed border-white/5 rounded-[2rem] flex flex-col items-center justify-center text-[10px] font-black uppercase tracking-[0.3em] text-neutral-800 gap-4">
+              <div className="w-8 h-8 rounded-full border border-dashed border-white/10 flex items-center justify-center">
+                <Plus size={12} />
+              </div>
+              <span>Drop tasks here</span>
             </div>
           )}
         </div>
@@ -195,18 +201,17 @@ export const Tasks: React.FC = () => {
     title: '',
     description: '',
     priority: 'medium' as TaskPriority,
-    status: 'todo' as TaskStatus,
+    status: 'TODO' as TaskStatus,
     dueDate: ''
   });
 
-  const { tasks, addTask, moveTask, isLoading, subscribeTasks } = useTaskStore();
+  const { tasks, addTask, moveTask, isLoading, fetchTasks } = useTaskStore();
   const { user } = useAuth();
   const [activeId, setActiveId] = useState<string | null>(null);
 
   useEffect(() => {
-    const unsubscribe = subscribeTasks();
-    return () => unsubscribe();
-  }, [subscribeTasks]);
+    fetchTasks();
+  }, [fetchTasks]);
 
   const filteredTasks = tasks.filter(task => 
     task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -218,16 +223,13 @@ export const Tasks: React.FC = () => {
     if (newTask.title.trim() && user) {
       await addTask({
         ...newTask,
-        assigneeId: user.id,
-        projectId: 'default',
-        tags: [],
         dueDate: newTask.dueDate ? new Date(newTask.dueDate).toISOString() : ''
       });
       setNewTask({
         title: '',
         description: '',
         priority: 'medium',
-        status: 'todo',
+        status: 'TODO',
         dueDate: ''
       });
       setIsAdding(false);
@@ -439,11 +441,11 @@ export const Tasks: React.FC = () => {
         <div className="flex items-center gap-6 text-[10px] font-black uppercase tracking-widest text-neutral-600">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-[#DFFF00]"></span>
-            <span>Done: {tasks.filter(t => t.status === 'done').length}</span>
+            <span>Done: {tasks.filter(t => t.status === 'DONE').length}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-[#FF00FF]"></span>
-            <span>In Progress: {tasks.filter(t => t.status !== 'done').length}</span>
+            <span>In Progress: {tasks.filter(t => t.status !== 'DONE').length}</span>
           </div>
         </div>
       </div>
@@ -456,7 +458,7 @@ export const Tasks: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+            className="w-full overflow-x-auto pb-8"
           >
             <DndContext 
               sensors={sensors}
@@ -464,7 +466,7 @@ export const Tasks: React.FC = () => {
               onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 min-w-[1200px] lg:min-w-0">
                 {COLUMNS.map((column) => (
                   <TaskColumn 
                     key={column.id}
@@ -510,7 +512,7 @@ export const Tasks: React.FC = () => {
               <div key={task.id} className="glass-card p-4 flex items-center justify-between group hover:border-[#DFFF00]/20 transition-all">
                 <div className="flex items-center gap-6">
                   <button className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                    task.status === 'done' ? 'bg-[#DFFF00] border-[#DFFF00] text-black' : 'border-neutral-800 text-transparent hover:border-white'
+                    task.status === 'DONE' ? 'bg-[#DFFF00] border-[#DFFF00] text-black' : 'border-neutral-800 text-transparent hover:border-white'
                   }`}>
                     <CheckCircle2 size={12} />
                   </button>

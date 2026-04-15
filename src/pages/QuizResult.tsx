@@ -16,6 +16,18 @@ export const QuizResult: React.FC = () => {
   const { degreeId, domainId } = useParams<{ degreeId: string; domainId: string }>();
   const state = location.state as ResultState | null;
 
+  // Save completion status
+  React.useEffect(() => {
+    if (state) {
+      const { score, questions } = state;
+      const total = questions.length;
+      const pct = Math.round((score / total) * 100);
+      if (pct >= 50) { // Assuming 50% is passing
+        localStorage.setItem(`quiz_completed_${degreeId}_${domainId}`, 'true');
+      }
+    }
+  }, [state, degreeId, domainId]);
+
   if (!state) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6">

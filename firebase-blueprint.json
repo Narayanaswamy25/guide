@@ -1,63 +1,51 @@
 {
   "entities": {
     "User": {
-      "title": "User Profile",
-      "description": "User profile information",
+      "title": "User",
+      "description": "User profile and settings",
       "type": "object",
       "properties": {
-        "uid": { "type": "string" },
-        "displayName": { "type": "string" },
-        "email": { "type": "string" },
-        "photoURL": { "type": "string" },
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
         "role": { "type": "string", "enum": ["student", "admin"] },
+        "selectedDegree": { "type": "string" },
+        "avatar": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["uid", "email"]
+      "required": ["id", "name", "email", "role"]
     },
     "Task": {
       "title": "Task",
-      "description": "A productivity task",
+      "description": "A task or assignment",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
+        "userId": { "type": "string" },
         "title": { "type": "string" },
         "description": { "type": "string" },
-        "status": { "type": "string", "enum": ["todo", "in-progress", "completed"] },
-        "priority": { "type": "string", "enum": ["low", "medium", "high"] },
+        "status": { "type": "string", "enum": ["backlog", "todo", "in-progress", "done", "canceled"] },
+        "priority": { "type": "string", "enum": ["low", "medium", "high", "urgent"] },
         "dueDate": { "type": "string", "format": "date-time" },
-        "userId": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" }
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["title", "status", "userId"]
+      "required": ["id", "userId", "title", "status", "priority"]
     },
     "Habit": {
       "title": "Habit",
-      "description": "A daily habit to track",
+      "description": "A daily study habit",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
-        "name": { "type": "string" },
-        "streak": { "type": "integer" },
-        "completedToday": { "type": "boolean" },
         "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "streak": { "type": "number" },
+        "completedToday": { "type": "boolean" },
+        "lastCompletedDate": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["name", "userId"]
-    },
-    "Course": {
-      "title": "Course",
-      "description": "An academic course",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "code": { "type": "string" },
-        "name": { "type": "string" },
-        "credits": { "type": "integer" },
-        "grade": { "type": "string" },
-        "status": { "type": "string", "enum": ["enrolled", "completed", "planned"] },
-        "userId": { "type": "string" }
-      },
-      "required": ["code", "name", "userId"]
+      "required": ["id", "userId", "name", "streak", "completedToday"]
     }
   },
   "firestore": {
@@ -67,15 +55,11 @@
     },
     "/tasks/{taskId}": {
       "schema": "Task",
-      "description": "User tasks"
+      "description": "Global tasks collection"
     },
     "/habits/{habitId}": {
       "schema": "Habit",
-      "description": "User habits"
-    },
-    "/courses/{courseId}": {
-      "schema": "Course",
-      "description": "User courses"
+      "description": "Global habits collection"
     }
   }
 }

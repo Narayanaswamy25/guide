@@ -12,12 +12,22 @@ model User {
   email     String   @unique
   password  String
   name      String?
-  role      String   @default("student")
-  createdAt DateTime @default(now())
+  role           String   @default("student")
+  selectedDegree String?
+  avatar         String?
+  bio            String?
+  github         String?
+  twitter        String?
+  linkedin       String?
+  focusHours     Int      @default(0)
+  createdAt      DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   tasks     Task[]
   habits    Habit[]
+  courses   Course[]
+  roadmapModules RoadmapModule[]
+  academicRecord AcademicRecord?
 
   @@map("users")
 }
@@ -26,7 +36,7 @@ model Task {
   id          String     @id @default(uuid())
   title       String
   description String?
-  status      TaskStatus @default(TODO)
+  status      String     @default("TODO")
   priority    String     @default("medium")
   dueDate     DateTime?
   userId      String
@@ -52,11 +62,51 @@ model Habit {
   @@map("habits")
 }
 
-enum TaskStatus {
-  BACKLOG
-  TODO
-  IN_PROGRESS
-  DONE
-  CANCELED
+model Course {
+  id           String   @id @default(uuid())
+  code         String
+  title        String
+  instructor   String
+  category     String
+  color        String
+  status       String   @default("active") // active, completed, upcoming
+  progress     Int      @default(0)
+  grade        String?
+  nextDeadline String?
+  userId       String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("courses")
 }
+
+model RoadmapModule {
+  id        String   @id @default(uuid())
+  degreeId  String
+  domainId  String
+  moduleIdx Int
+  userId    String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, degreeId, domainId, moduleIdx])
+  @@map("roadmap_modules")
+}
+
+model AcademicRecord {
+  id              String   @id @default(uuid())
+  gpa             Float    @default(0.0)
+  creditsEarned   Int      @default(0)
+  creditsRequired Int      @default(120)
+  userId          String   @unique
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("academic_records")
+}
+
 

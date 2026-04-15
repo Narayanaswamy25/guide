@@ -19,6 +19,8 @@ import {
   ResponsiveContainer 
 } from 'recharts';
 import { useTaskStore } from '../stores/taskStore';
+import { useCourseStore } from '../stores/courseStore';
+import { useModuleStore } from '../stores/moduleStore';
 import { useAuth } from '../context/AuthContext';
 import { formatTimestamp } from '../lib/utils';
 
@@ -33,23 +35,62 @@ const data = [
 ];
 
 export const Dashboard: React.FC = () => {
+  const [isMounted, setIsMounted] = React.useState(false);
   const { user } = useAuth();
-  const { tasks, subscribeTasks, isLoading } = useTaskStore();
+  const { tasks, fetchTasks, isLoading } = useTaskStore();
+  const { courses } = useCourseStore();
+  const { completedModules } = useModuleStore();
 
   useEffect(() => {
-    const unsubscribe = subscribeTasks();
-    return () => unsubscribe();
-  }, [subscribeTasks]);
+    setIsMounted(true);
+    fetchTasks();
+  }, [fetchTasks]);
 
-  const completedTasks = tasks.filter(t => t.status === 'done').length;
-  const pendingTasks = tasks.filter(t => t.status !== 'done').length;
+  // Task Stats
+  const completedTasks = tasks.filter(t => t.status === 'DONE').length;
+  const inProgressTasks = tasks.filter(t => t.status === 'IN_PROGRESS').length;
+  
+  // Course Stats
+  const completedCourses = courses.filter(c => c.status === 'completed').length;
+  const inProgressCourses = courses.filter(c => c.status === 'active').length;
+
+  // Roadmap Stats
+  const roadmapCompleted = Object.values(completedModules).reduce((acc, mods) => acc + mods.length, 0);
+  // For "In Progress" roadmap, we can count domains that have some progress but aren't finished
+  // But maybe it's simpler to just count the individual modules as "tasks"
+  
+  const totalCompleted = completedTasks + completedCourses + roadmapCompleted;
+  const totalInProgress = inProgressTasks + inProgressCourses;
   const urgentTasks = tasks.filter(t => t.priority === 'urgent').length;
+  
+  // Efficiency: Completed tasks vs tasks that were actually started (IN_PROGRESS + DONE)
+  const startedTasks = tasks.filter(t => t.status === 'DONE' || t.status === 'IN_PROGRESS');
+  const startedCourses = courses.filter(c => c.status === 'completed' || c.status === 'active');
+  
+  const totalStarted = startedTasks.length + startedCourses.length + roadmapCompleted;
+  const efficiency = totalStarted > 0 
+    ? Math.round((totalCompleted / totalStarted) * 100) 
+    : 0;
+
+  useEffect(() => {
+    if (tasks.length > 0 || courses.length > 0 || roadmapCompleted > 0) {
+      console.log('Dashboard Metrics Debug:', {
+        totalTasks: tasks.length,
+        totalCourses: courses.length,
+        roadmapCompleted,
+        completed: totalCompleted,
+        inProgress: totalInProgress,
+        started: totalStarted,
+        efficiency: efficiency
+      });
+    }
+  }, [tasks, courses, roadmapCompleted, totalCompleted, totalInProgress, totalStarted, efficiency]);
 
   const stats = [
-    { label: 'Completed', value: completedTasks, icon: CheckCircle2, color: 'text-[#DFFF00]' },
-    { label: 'In Progress', value: pendingTasks, icon: Clock, color: 'text-[#FF00FF]' },
+    { label: 'Completed', value: totalCompleted, icon: CheckCircle2, color: 'text-[#DFFF00]' },
+    { label: 'In Progress', value: totalInProgress, icon: Clock, color: 'text-[#FF00FF]' },
     { label: 'Urgent', value: urgentTasks, icon: Flame, color: 'text-[#00FFFF]' },
-    { label: 'Efficiency', value: '94%', icon: TrendingUp, color: 'text-white' },
+    { label: 'Efficiency', value: `${efficiency}%`, icon: TrendingUp, color: 'text-white' },
   ];
 
   if (isLoading && tasks.length === 0) {
@@ -97,13 +138,22 @@ export const Dashboard: React.FC = () => {
     <div className="space-y-10">
       {/* Header */}
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div>
-          <div className="text-[10px] font-black uppercase tracking-[0.4em] text-[#DFFF00] mb-2">
-            Operational Overview // {new Date().toLocaleDateString()}
+        <div className="flex items-center gap-6">
+          <div className="w-20 h-20 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
+            {user?.avatar ? (
+              <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+            ) : (
+              <span className="text-3xl font-black text-[#DFFF00]">{user?.name.charAt(0)}</span>
+            )}
           </div>
-          <h1 className="text-5xl font-black uppercase tracking-tighter text-white">
-            Welcome, {user?.name.split(' ')[0]}
-          </h1>
+          <div>
+            <div className="text-[10px] font-black uppercase tracking-[0.4em] text-[#DFFF00] mb-2">
+              Operational Overview // {new Date().toLocaleDateString()}
+            </div>
+            <h1 className="text-5xl font-black uppercase tracking-tighter text-white dark:text-white light:text-neutral-900">
+              Welcome, {user?.name.split(' ')[0]}
+            </h1>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <button className="px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-white/10 transition-all">
@@ -127,7 +177,7 @@ export const Dashboard: React.FC = () => {
           >
             <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-[#DFFF00]/10 transition-colors duration-500"></div>
             <stat.icon className={`${stat.color} mb-6`} size={24} />
-            <div className="text-4xl font-black text-white mb-2 tracking-tighter">{stat.value}</div>
+            <div className="text-4xl font-black text-white dark:text-white light:text-neutral-900 mb-2 tracking-tighter">{stat.value}</div>
             <div className="text-[9px] font-black uppercase tracking-widest text-neutral-600">{stat.label}</div>
           </motion.div>
         ))}
@@ -138,7 +188,7 @@ export const Dashboard: React.FC = () => {
         <div className="lg:col-span-8 glass-card p-8">
           <div className="flex items-center justify-between mb-10">
             <div>
-              <h2 className="text-xl font-black uppercase tracking-tight text-white mb-1">Focus Intensity</h2>
+              <h2 className="text-xl font-black uppercase tracking-tight text-white dark:text-white light:text-neutral-900 mb-1">Focus Intensity</h2>
               <p className="text-[10px] text-neutral-500 font-black uppercase tracking-widest">Weekly Cognitive Output</p>
             </div>
             <select className="bg-transparent border-none text-[10px] font-black uppercase tracking-widest text-[#DFFF00] focus:outline-none cursor-pointer">
@@ -146,60 +196,64 @@ export const Dashboard: React.FC = () => {
               <option>Last 30 Days</option>
             </select>
           </div>
-          <div className="h-[300px] w-full min-h-[300px]">
-            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-              <AreaChart data={data}>
-                <defs>
-                  <linearGradient id="colorFocus" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#DFFF00" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#DFFF00" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-                <XAxis 
-                  dataKey="name" 
-                  stroke="#ffffff20" 
-                  fontSize={10} 
-                  tickLine={false} 
-                  axisLine={false}
-                  dy={10}
-                />
-                <YAxis hide />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#09090b', 
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    borderRadius: '12px',
-                    fontSize: '10px',
-                    fontWeight: '900',
-                    textTransform: 'uppercase'
-                  }}
-                  itemStyle={{ color: '#DFFF00' }}
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="focus" 
-                  stroke="#DFFF00" 
-                  strokeWidth={3}
-                  fillOpacity={1} 
-                  fill="url(#colorFocus)" 
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+          <div className="h-[300px] w-full min-h-[300px] relative">
+            <div className="absolute inset-0">
+              {isMounted && (
+                <ResponsiveContainer width="100%" height="100%" debounce={100}>
+                  <AreaChart data={data}>
+                    <defs>
+                      <linearGradient id="colorFocus" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#DFFF00" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#DFFF00" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+                    <XAxis 
+                      dataKey="name" 
+                      stroke="#ffffff20" 
+                      fontSize={10} 
+                      tickLine={false} 
+                      axisLine={false}
+                      dy={10}
+                    />
+                    <YAxis hide />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: '#09090b', 
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        borderRadius: '12px',
+                        fontSize: '10px',
+                        fontWeight: '900',
+                        textTransform: 'uppercase'
+                      }}
+                      itemStyle={{ color: '#DFFF00' }}
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="focus" 
+                      stroke="#DFFF00" 
+                      strokeWidth={3}
+                      fillOpacity={1} 
+                      fill="url(#colorFocus)" 
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Recent Activity */}
         <div className="lg:col-span-4 glass-card p-8">
-          <h2 className="text-xl font-black uppercase tracking-tight text-white mb-8">Recent Activity</h2>
+          <h2 className="text-xl font-black uppercase tracking-tight text-white dark:text-white light:text-neutral-900 mb-8">Recent Activity</h2>
           <div className="space-y-8">
             {tasks.slice(0, 4).map((task, i) => (
               <div key={i} className="flex items-start gap-4 group">
                 <div className={`w-2 h-2 rounded-full mt-1.5 ${
-                  task.status === 'done' ? 'bg-[#DFFF00]' : 'bg-neutral-800'
+                  task.status === 'DONE' ? 'bg-[#DFFF00]' : 'bg-neutral-800'
                 }`}></div>
                 <div className="flex-grow">
-                  <div className="text-[11px] font-black text-white uppercase tracking-tight group-hover:text-[#DFFF00] transition-colors cursor-pointer">
+                  <div className="text-[11px] font-black text-white dark:text-white light:text-neutral-900 uppercase tracking-tight group-hover:text-[#DFFF00] transition-colors cursor-pointer">
                     {task.title}
                   </div>
                   <div className="text-[9px] text-neutral-600 font-black uppercase tracking-widest mt-1">
@@ -221,7 +275,7 @@ export const Dashboard: React.FC = () => {
       {/* Upcoming Tasks */}
       <section className="glass-card p-8">
         <div className="flex items-center justify-between mb-10">
-          <h2 className="text-xl font-black uppercase tracking-tight text-white">Critical Deadlines</h2>
+          <h2 className="text-xl font-black uppercase tracking-tight text-white dark:text-white light:text-neutral-900">Critical Deadlines</h2>
           <button className="text-[10px] font-black uppercase tracking-widest text-[#DFFF00] hover:text-white transition-colors">
             View Full Queue
           </button>
@@ -239,7 +293,7 @@ export const Dashboard: React.FC = () => {
                   <MoreHorizontal size={16} />
                 </button>
               </div>
-              <h3 className="text-sm font-black text-white uppercase tracking-tight mb-2 group-hover:text-[#DFFF00] transition-colors">
+              <h3 className="text-sm font-black text-white dark:text-white light:text-neutral-900 uppercase tracking-tight mb-2 group-hover:text-[#DFFF00] transition-colors">
                 {task.title}
               </h3>
               <div className="flex items-center gap-4 text-[9px] text-neutral-600 font-black uppercase tracking-widest">

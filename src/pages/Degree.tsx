@@ -6,8 +6,11 @@ import { useAuth } from '../context/AuthContext';
 import { getDegreeById } from '../data/degreesData';
 import { Link } from 'react-router-dom';
 
+import { useModuleStore } from '../stores/moduleStore';
+
 export const Degree: React.FC = () => {
   const { user } = useAuth();
+  const { completedModules } = useModuleStore();
   const selectedDegree = user?.selectedDegree ? getDegreeById(user.selectedDegree) : null;
 
   if (!selectedDegree) {
@@ -20,31 +23,43 @@ export const Degree: React.FC = () => {
             You haven&apos;t enrolled in any degree program yet. Explore our curated list of engineering and technology degrees to start your journey.
           </p>
         </div>
-        <Link to="/explore" className="px-8 py-4 bg-[#DFFF00] text-black font-black uppercase tracking-widest rounded-xl flex items-center gap-3 hover:scale-105 transition-all">
-          Explore Degrees <ArrowRight size={20} />
-        </Link>
+        <Link to="/explore" className="btn-primary">Explore Degrees <ArrowRight size={20} /></Link>
       </div>
     );
   }
 
+  const requirements = selectedDegree.domains.map(domain => {
+    const key = `${selectedDegree.id}_${domain.id}`;
+    const completedCount = completedModules[key]?.length || 0;
+    const totalCount = domain.modules.length;
+    const isFinished = completedCount === totalCount;
+
+    return {
+      name: domain.title,
+      completed: completedCount,
+      total: totalCount,
+      status: isFinished ? "Completed" : completedCount > 0 ? "In Progress" : "Not Started"
+    };
+  });
+
+  const totalModules = selectedDegree.domains.reduce((acc, d) => acc + d.modules.length, 0);
+  const totalCompleted = Object.keys(completedModules)
+    .filter(key => key.startsWith(selectedDegree.id))
+    .reduce((acc, key) => acc + completedModules[key].length, 0);
+  
+  const overallProgress = totalModules > 0 ? Math.round((totalCompleted / totalModules) * 100) : 0;
+
   const degreeInfo = {
     title: selectedDegree.title,
     institution: "India College Guide — Academic Node",
-    progress: 0,
-    creditsEarned: 0,
-    creditsRequired: 120,
-    gpa: "0.00",
+    progress: overallProgress,
+    creditsEarned: Math.floor(totalCompleted * 1.5), // Mock credit calculation
+    creditsRequired: Math.floor(totalModules * 1.5),
+    gpa: totalCompleted > 0 ? (3.5 + (totalCompleted / totalModules) * 0.5).toFixed(2) : "0.00",
     major: selectedDegree.shortTitle,
     minor: "Not Selected",
     expectedGraduation: "June 2028"
   };
-
-  const requirements = selectedDegree.domains.map(domain => ({
-    name: domain.title,
-    completed: 0,
-    total: domain.modules.length,
-    status: "Not Started"
-  }));
 
   return (
     <div className="space-y-8">
@@ -52,7 +67,7 @@ export const Degree: React.FC = () => {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
           <div className="text-[10px] font-black uppercase tracking-[0.5em] text-[#DFFF00] mb-2">Academic Infrastructure</div>
-          <h1 className="text-5xl font-black uppercase tracking-tighter text-white">
+          <h1 className="text-5xl font-black uppercase tracking-tighter text-white dark:text-white light:text-neutral-900">
             Degree <span className="text-neutral-500">Trajectory.</span>
           </h1>
         </div>
@@ -63,7 +78,7 @@ export const Degree: React.FC = () => {
           </div>
           <div className="glass-card px-6 py-3 border-white/10">
             <div className="text-[8px] font-black uppercase tracking-widest text-neutral-500 mb-1">Credits</div>
-            <div className="text-2xl font-black text-white">{degreeInfo.creditsEarned}/{degreeInfo.creditsRequired}</div>
+            <div className="text-2xl font-black text-white dark:text-white light:text-neutral-900">{degreeInfo.creditsEarned}/{degreeInfo.creditsRequired}</div>
           </div>
         </div>
       </div>
@@ -81,22 +96,22 @@ export const Degree: React.FC = () => {
         <div className="grid md:grid-cols-2 gap-12 relative z-10">
           <div className="space-y-6">
             <div>
-              <h2 className="text-3xl font-black uppercase tracking-tight text-white mb-2">{degreeInfo.title}</h2>
+              <h2 className="text-3xl font-black uppercase tracking-tight text-white dark:text-white light:text-neutral-900 mb-2">{degreeInfo.title}</h2>
               <p className="text-neutral-500 font-bold uppercase tracking-widest text-xs">{degreeInfo.institution}</p>
             </div>
             
             <div className="grid grid-cols-2 gap-8">
               <div>
                 <div className="text-[10px] font-black uppercase tracking-widest text-neutral-600 mb-2">Major</div>
-                <div className="text-white font-bold">{degreeInfo.major}</div>
+                <div className="text-white dark:text-white light:text-neutral-900 font-bold">{degreeInfo.major}</div>
               </div>
               <div>
                 <div className="text-[10px] font-black uppercase tracking-widest text-neutral-600 mb-2">Minor</div>
-                <div className="text-white font-bold">{degreeInfo.minor}</div>
+                <div className="text-white dark:text-white light:text-neutral-900 font-bold">{degreeInfo.minor}</div>
               </div>
               <div>
                 <div className="text-[10px] font-black uppercase tracking-widest text-neutral-600 mb-2">Expected Grad</div>
-                <div className="text-white font-bold">{degreeInfo.expectedGraduation}</div>
+                <div className="text-white dark:text-white light:text-neutral-900 font-bold">{degreeInfo.expectedGraduation}</div>
               </div>
               <div>
                 <div className="text-[10px] font-black uppercase tracking-widest text-neutral-600 mb-2">Status</div>
@@ -111,7 +126,7 @@ export const Degree: React.FC = () => {
           <div className="flex flex-col justify-center">
             <div className="flex justify-between items-end mb-4">
               <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500">Overall Completion</div>
-              <div className="text-4xl font-black text-white">{degreeInfo.progress}%</div>
+              <div className="text-4xl font-black text-white dark:text-white light:text-neutral-900">{degreeInfo.progress}%</div>
             </div>
             <div className="w-full h-4 bg-white/5 rounded-full overflow-hidden p-1 border border-white/5">
               <motion.div 
@@ -149,7 +164,7 @@ export const Degree: React.FC = () => {
               </div>
             </div>
             
-            <h3 className="text-xl font-black uppercase tracking-tight text-white mb-4">{req.name}</h3>
+            <h3 className="text-xl font-black uppercase tracking-tight text-white dark:text-white light:text-neutral-900 mb-4">{req.name}</h3>
             
             <div className="space-y-4">
               <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-neutral-500">
@@ -180,7 +195,7 @@ export const Degree: React.FC = () => {
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 glass-card p-8">
           <div className="flex items-center justify-between mb-8">
-            <h3 className="text-xl font-black uppercase tracking-tight text-white flex items-center gap-3">
+            <h3 className="text-xl font-black uppercase tracking-tight text-white dark:text-white light:text-neutral-900 flex items-center gap-3">
               <Clock size={20} className="text-[#DFFF00]" />
               Academic Velocity
             </h3>
@@ -205,7 +220,7 @@ export const Degree: React.FC = () => {
 
         <div className="glass-card p-8 flex flex-col justify-between">
           <div>
-            <h3 className="text-xl font-black uppercase tracking-tight text-white mb-6 flex items-center gap-3">
+            <h3 className="text-xl font-black uppercase tracking-tight text-white dark:text-white light:text-neutral-900 mb-6 flex items-center gap-3">
               <BarChart3 size={20} className="text-[#FF00FF]" />
               Skill Matrix
             </h3>

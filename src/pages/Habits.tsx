@@ -16,15 +16,14 @@ import { useHabitStore } from '../stores/habitStore';
 const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
 export const Habits: React.FC = () => {
-  const { habits, addHabit, toggleHabit, deleteHabit, isLoading, subscribeHabits } = useHabitStore();
+  const { habits, addHabit, toggleHabit, deleteHabit, isLoading, fetchHabits } = useHabitStore();
   const [isAdding, setIsAdding] = useState(false);
   const [newHabitName, setNewHabitName] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    const unsubscribe = subscribeHabits();
-    return () => unsubscribe();
-  }, [subscribeHabits]);
+    fetchHabits();
+  }, [fetchHabits]);
 
   const filteredHabits = habits.filter(habit => 
     habit.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -88,7 +87,7 @@ export const Habits: React.FC = () => {
           <div className="text-[10px] font-black uppercase tracking-[0.4em] text-[#DFFF00] mb-2">
             Study Goals  // Active: {habits.filter(h => h.streak > 0).length}
           </div>
-          <h1 className="text-5xl font-black uppercase tracking-tighter text-white">
+          <h1 className="text-5xl font-black uppercase tracking-tighter text-white dark:text-white light:text-neutral-900">
             Learning Goals
           </h1>
         </div>
@@ -161,7 +160,7 @@ export const Habits: React.FC = () => {
             className="glass-card p-8 group relative overflow-hidden"
           >
             <stat.icon className={`${stat.color} mb-6`} size={24} />
-            <div className="text-4xl font-black text-white mb-2 tracking-tighter">{stat.value}</div>
+            <div className="text-4xl font-black text-white dark:text-white light:text-neutral-900 mb-2 tracking-tighter">{stat.value}</div>
             <div className="text-[9px] font-black uppercase tracking-widest text-neutral-600">{stat.label}</div>
           </motion.div>
         ))}
@@ -183,7 +182,7 @@ export const Habits: React.FC = () => {
                   <Activity size={24} />
                 </div>
                 <div>
-                  <h3 className="text-xl font-black uppercase tracking-tight text-white group-hover:text-[#DFFF00] transition-colors">
+                  <h3 className="text-xl font-black uppercase tracking-tight text-white dark:text-white light:text-neutral-900 group-hover:text-[#DFFF00] transition-colors">
                     {habit.name}
                   </h3>
                   <div className="text-[9px] text-neutral-600 font-black uppercase tracking-widest mt-1">
@@ -259,7 +258,7 @@ export const Habits: React.FC = () => {
           <TrendingUp className="text-[#DFFF00]/10" size={120} />
         </div>
         <div className="relative z-10">
-          <h2 className="text-2xl font-black uppercase tracking-tight text-white mb-2">Study Progress Analysis</h2>
+          <h2 className="text-2xl font-black uppercase tracking-tight text-white dark:text-white light:text-neutral-900 mb-2">Study Progress Analysis</h2>
           <p className="text-neutral-500 font-medium max-w-md mb-10">
             Your study consistency has improved 14% this week. Learning goals are being tracked efficiently.
           </p>
@@ -269,7 +268,7 @@ export const Habits: React.FC = () => {
                 <Zap size={28} />
               </div>
               <div>
-                <div className="text-2xl font-black text-white tracking-tighter">940</div>
+                <div className="text-2xl font-black text-white dark:text-white light:text-neutral-900 tracking-tighter">940</div>
                 <div className="text-[9px] text-neutral-600 font-black uppercase tracking-widest">Global Score</div>
               </div>
             </div>
@@ -278,7 +277,7 @@ export const Habits: React.FC = () => {
                 <Target size={28} />
               </div>
               <div>
-                <div className="text-2xl font-black text-white tracking-tighter">8.5h</div>
+                <div className="text-2xl font-black text-white dark:text-white light:text-neutral-900 tracking-tighter">8.5h</div>
                 <div className="text-[9px] text-neutral-600 font-black uppercase tracking-widest">Avg Focus</div>
               </div>
             </div>

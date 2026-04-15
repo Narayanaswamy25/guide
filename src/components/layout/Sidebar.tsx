@@ -8,7 +8,6 @@ import {
   Calendar, 
   BarChart3, 
   Settings, 
-  User,
   ChevronLeft,
   ChevronRight,
   LogOut,
@@ -28,29 +27,29 @@ const navItems = [
   { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
   { label: 'Explore', path: '/explore', icon: Compass },
   { label: 'Extra Skills', path: '/extra-skills', icon: Sparkles },
-  { label: 'Degree', path: '/degree', icon: GraduationCap },
-  { label: 'Courses', path: '/courses', icon: BookOpen },
+  // { label: 'Degree', path: '/degree', icon: GraduationCap },
+  // { label: 'Courses', path: '/courses', icon: BookOpen },
   { label: 'Tasks', path: '/tasks', icon: CheckSquare },
   { label: 'Habits', path: '/habits', icon: Activity },
   { label: 'Calendar', path: '/calendar', icon: Calendar },
-  { label: 'Analytics', path: '/analytics', icon: BarChart3 },
+  // { label: 'Analytics', path: '/analytics', icon: BarChart3 },
 ];
 
 const bottomItems = [
   { label: 'Settings', path: '/settings', icon: Settings },
-  { label: 'Profile', path: '/profile', icon: User },
+
 ];
 
 export const Sidebar: React.FC = () => {
   const { isSidebarOpen, toggleSidebar } = useUIStore();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const location = useLocation();
 
   return (
     <motion.aside 
       initial={false}
       animate={{ width: isSidebarOpen ? 240 : 80 }}
-      className="h-screen bg-[#09090b] dark:bg-[#09090b] light:bg-white border-r border-white/5 light:border-neutral-200 flex flex-col relative z-50 transition-all duration-300 ease-in-out"
+      className="h-screen sticky top-0 flex-shrink-0 bg-[#09090b] dark:bg-[#09090b] light:bg-white border-r border-white/5 light:border-neutral-200 flex flex-col relative z-50 transition-all duration-300 ease-in-out"
     >
       {/* Brand Section */}
       <Link to="/" className="h-20 flex items-center px-6 border-b border-white/5 light:border-neutral-200 hover:bg-white/[0.02] light:hover:bg-neutral-50 transition-colors">
@@ -99,6 +98,29 @@ export const Sidebar: React.FC = () => {
 
       {/* Bottom Section */}
       <div className="p-3 border-t border-white/5 light:border-neutral-200 space-y-1">
+        {/* {user && (
+          <Link 
+            to="/settings"
+            className={`flex items-center gap-3 px-2 py-2 rounded-xl transition-all group mb-2 ${
+              location.pathname === '/settings' ? 'bg-white/5 light:bg-neutral-100' : 'hover:bg-white/[0.02] light:hover:bg-neutral-50'
+            }`}
+          >
+            <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+              {user.avatar ? (
+                <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+              ) : (
+                <span className="text-[10px] font-black text-[#DFFF00]">{user.name.charAt(0)}</span>
+              )}
+            </div>
+            {isSidebarOpen && (
+              <div className="flex flex-col overflow-hidden">
+                <span className="text-[10px] font-black text-white dark:text-white light:text-black truncate uppercase tracking-tight">{user.name}</span>
+                <span className="text-[8px] font-bold text-neutral-600 truncate uppercase tracking-widest">{user.role}</span>
+              </div>
+            )}
+          </Link>
+        )} */}
+
         {bottomItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (

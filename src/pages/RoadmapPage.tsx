@@ -7,13 +7,20 @@ import {
 } from 'lucide-react';
 import { getDomainById, getDegreeById } from '../data/degreesData';
 
+import { useModuleStore } from '../stores/moduleStore';
+
 export const RoadmapPage: React.FC = () => {
   const { degreeId, domainId } = useParams<{ degreeId: string; domainId: string }>();
   const navigate = useNavigate();
   const degree = getDegreeById(degreeId || '');
   const domain = getDomainById(degreeId || '', domainId || '');
   const [activeModuleIdx, setActiveModuleIdx] = useState(0);
-  const [completedModules, setCompletedModules] = useState<Set<number>>(new Set());
+  
+  const { completedModules: allCompleted, markModuleComplete } = useModuleStore();
+  const key = `${degreeId}_${domainId}`;
+  const completedModules = new Set(allCompleted[key] || []);
+
+  const isQuizCompleted = localStorage.getItem(`quiz_completed_${degreeId}_${domainId}`) === 'true';
 
   if (!degree || !domain) {
     return (
@@ -29,11 +36,9 @@ export const RoadmapPage: React.FC = () => {
   const progress = Math.round((completedModules.size / domain.modules.length) * 100);
 
   const markComplete = () => {
-    setCompletedModules(prev => {
-      const next = new Set(prev);
-      next.add(activeModuleIdx);
-      return next;
-    });
+    if (degreeId && domainId) {
+      markModuleComplete(degreeId, domainId, activeModuleIdx);
+    }
     if (activeModuleIdx < domain.modules.length - 1) {
       setActiveModuleIdx(activeModuleIdx + 1);
     }
@@ -69,21 +74,6 @@ export const RoadmapPage: React.FC = () => {
                 className="h-full bg-[#c8ff00] rounded-full"
               />
             </div>
-          </div>
-          {/* Quiz CTA */}
-          <div className="relative group/quiz">
-            <button
-              onClick={() => progress === 100 && navigate(`/explore/${degreeId}/${domainId}/quiz`)}
-              disabled={progress < 100}
-              className={`btn-primary flex items-center gap-2 text-[10px] ${progress < 100 ? 'opacity-50 cursor-not-allowed grayscale' : ''}`}
-            >
-              Take Quiz <ArrowRight size={14} />
-            </button>
-            {progress < 100 && (
-              <div className="absolute bottom-full right-0 mb-2 px-3 py-1.5 bg-black border border-white/10 rounded text-[8px] font-black uppercase tracking-widest text-neutral-500 opacity-0 group-hover/quiz:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                Complete all modules to unlock
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -237,18 +227,32 @@ export const RoadmapPage: React.FC = () => {
                 <ChevronLeft size={16} /> Previous
               </button>
               <button
-                onClick={markComplete}
+                onClick={() => {
+                  if (isQuizCompleted) return;
+                  if (progress === 100) {
+                    navigate(`/explore/${degreeId}/${domainId}/quiz`);
+                    return;
+                  }
+                  markComplete();
+                }}
                 className="btn-primary flex items-center gap-2 flex-1 justify-center"
               >
-                <CheckCircle2 size={16} />
-                {completedModules.has(activeModuleIdx) ? 'Completed ✓' : 'Mark Complete & Next'}
-              </button>
-              <button
-                onClick={() => progress === 100 && navigate(`/explore/${degreeId}/${domainId}/quiz`)}
-                disabled={progress < 100}
-                className={`btn-secondary flex items-center gap-2 ${progress < 100 ? 'opacity-40 cursor-not-allowed' : ''}`}
-              >
-                Take Quiz <ArrowRight size={16} />
+                {isQuizCompleted ? (
+                  <>
+                    <CheckCircle2 size={16} />
+                    <span>Complete</span>
+                  </>
+                ) : progress === 100 ? (
+                  <>
+                    <ArrowRight size={16} />
+                    <span>Take Quiz</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 size={16} />
+                    <span>{completedModules.has(activeModuleIdx) ? 'Completed ✓' : 'Mark Complete & Next'}</span>
+                  </>
+                )}
               </button>
             </div>
           </motion.div>

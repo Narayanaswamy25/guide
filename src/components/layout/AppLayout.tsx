@@ -15,7 +15,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const { user } = useAuth();
 
   return (
-    <div className="flex min-h-screen bg-[#000000] dark:bg-[#000000] light:bg-[#F8F9FA] text-white dark:text-white light:text-neutral-900 overflow-hidden font-sans transition-colors duration-300">
+    <div className="flex h-screen bg-[#000000] dark:bg-[#000000] light:bg-[#F8F9FA] text-white dark:text-white light:text-neutral-900 overflow-hidden font-sans transition-colors duration-300">
       {/* Sidebar - Fixed */}
       <Sidebar />
 
@@ -52,7 +52,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.3, ease: "easeOut" }}
-              className="p-8 max-w-[1440px] mx-auto w-full"
+              className="p-8 max-w-[1800px] mx-auto w-full"
             >
               {children}
             </motion.div>

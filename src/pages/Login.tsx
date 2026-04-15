@@ -1,18 +1,20 @@
 
-import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff, ArrowLeft, Loader2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { ArrowLeft, Loader2, Mail, Lock, User as UserIcon } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export const Login: React.FC = () => {
-  const [isLogin, setIsLogin] = useState(true);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
   const [error, setError] = useState('');
-  const { login, isAuthenticated } = useAuth();
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    name: '',
+  });
+
+  const { login, register, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,354 +28,133 @@ export const Login: React.FC = () => {
     setError('');
     setIsLoading(true);
     try {
-      await login({ email, password, isRegister: !isLogin, name: name || undefined });
+      if (isRegistering) {
+        await register(formData.email, formData.password, formData.name);
+      } else {
+        await login(formData.email, formData.password);
+      }
       navigate('/dashboard');
-    } catch (err: any) {
-      setError(err?.message || err?.response?.data?.message || 'Authentication failed. Please try again.');
+    } catch (err: unknown) {
+      const errorResponse = err as { response?: { data?: { error?: string } } };
+      const errorMessage = errorResponse.response?.data?.error || 'Authentication failed. Please try again.';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleTabSwitch = (loginTab: boolean) => {
-    setIsLogin(loginTab);
-    setError('');
-    setEmail('');
-    setPassword('');
-    setName('');
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background: '#0a0a0a',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '24px',
-        position: 'relative',
-        overflow: 'hidden',
-        fontFamily: "'Inter', 'Helvetica Neue', sans-serif",
-      }}
-    >
+    <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center p-6 relative overflow-hidden font-sans">
       {/* Background ambient glow */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '700px',
-          height: '700px',
-          background: 'radial-gradient(ellipse at center, rgba(201,255,0,0.06) 0%, transparent 70%)',
-          pointerEvents: 'none',
-          borderRadius: '50%',
-        }}
-      />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-radial-[ellipse_at_center] from-[#c9ff000f] to-transparent pointer-events-none rounded-full" />
+      
       {/* Subtle dot grid */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundImage:
-            'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.025) 1px, transparent 0)',
-          backgroundSize: '28px 28px',
-          pointerEvents: 'none',
-        }}
-      />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.025)_1px,transparent_0)] bg-[length:28px_28px] pointer-events-none" />
 
       {/* ── LOGO ── */}
-      <div style={{ marginBottom: '48px', textAlign: 'center', position: 'relative', zIndex: 10 }}>
-        <h1
-          style={{
-            fontSize: '56px',
-            fontWeight: 900,
-            letterSpacing: '-2px',
-            color: '#ffffff',
-            margin: 0,
-            lineHeight: 1,
-          }}
-        >
-          GUIDE
-          <span style={{ color: '#c8ff00' }}>.</span>
+      <div className="mb-12 text-center relative z-10">
+        <h1 className="text-[56px] font-black tracking-[-2px] text-white m-0 leading-none">
+          GUIDE<span className="text-[#c8ff00]">.</span>
         </h1>
-        <p
-          style={{
-            marginTop: '10px',
-            fontSize: '10px',
-            fontWeight: 700,
-            letterSpacing: '0.28em',
-            color: '#555',
-            textTransform: 'uppercase',
-          }}
-        >
+        <p className="mt-2.5 text-[10px] font-bold tracking-[0.28em] text-[#555] uppercase">
           Productivity Infrastructure
         </p>
       </div>
 
       {/* ── CARD ── */}
-      <div
-        style={{
-          width: '100%',
-          maxWidth: '460px',
-          background: 'rgba(255,255,255,0.03)',
-          backdropFilter: 'blur(24px)',
-          WebkitBackdropFilter: 'blur(24px)',
-          border: '1px solid rgba(255,255,255,0.07)',
-          borderRadius: '20px',
-          padding: '36px 36px 40px',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.7)',
-          position: 'relative',
-          zIndex: 10,
-        }}
-      >
-        {/* ── TAB SWITCHER ── */}
-        <div
-          style={{
-            display: 'flex',
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(255,255,255,0.06)',
-            borderRadius: '12px',
-            padding: '5px',
-            marginBottom: '32px',
-          }}
-        >
-          <button
-            onClick={() => handleTabSwitch(true)}
-            style={{
-              flex: 1,
-              padding: '12px 0',
-              borderRadius: '9px',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: 800,
-              fontSize: '11px',
-              letterSpacing: '0.15em',
-              textTransform: 'uppercase',
-              transition: 'all 0.2s ease',
-              background: isLogin ? '#c8ff00' : 'transparent',
-              color: isLogin ? '#000' : '#555',
-              boxShadow: isLogin ? '0 0 16px rgba(200,255,0,0.35)' : 'none',
-            }}
-          >
-            Login
-          </button>
-          <button
-            onClick={() => handleTabSwitch(false)}
-            style={{
-              flex: 1,
-              padding: '12px 0',
-              borderRadius: '9px',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: 800,
-              fontSize: '11px',
-              letterSpacing: '0.15em',
-              textTransform: 'uppercase',
-              transition: 'all 0.2s ease',
-              background: !isLogin ? '#c8ff00' : 'transparent',
-              color: !isLogin ? '#000' : '#555',
-              boxShadow: !isLogin ? '0 0 16px rgba(200,255,0,0.35)' : 'none',
-            }}
-          >
-            Register
-          </button>
-        </div>
+      <div className="w-full max-w-[460px] bg-white/[0.03] backdrop-blur-[24px] border border-white/[0.07] rounded-[20px] p-12 shadow-[0_20px_60px_rgba(0,0,0,0.7)] relative z-10">
+        <h2 className="text-white text-xl font-extrabold mb-3 uppercase tracking-[0.1em] text-center">
+          {isRegistering ? 'Create Account' : 'Welcome Back'}
+        </h2>
+        <p className="text-[#666] text-xs mb-8 font-medium text-center">
+          {isRegistering 
+            ? 'Join the platform to start tracking your academic progress.' 
+            : 'Sign in to access your academic workspace and track your progress.'}
+        </p>
 
-        {/* ── FORM ── */}
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          {/* Name field (register only) */}
-          {!isLogin && (
-            <div style={{ position: 'relative' }}>
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 mb-6">
+            <p className="text-[#ff4d4d] text-[11px] font-semibold text-center">
+              {error}
+            </p>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {isRegistering && (
+            <div className="relative">
+              <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-600" size={18} />
               <input
-                id="register-name"
                 type="text"
+                name="name"
                 placeholder="Full Name"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                required={!isLogin}
-                style={inputStyle}
-                onFocus={e => Object.assign(e.currentTarget.style, inputFocusStyle)}
-                onBlur={e => Object.assign(e.currentTarget.style, inputBlurStyle)}
+                required
+                value={formData.name}
+                onChange={handleChange}
+                className="w-full bg-white/[0.02] border border-white/10 rounded-xl py-4 pl-12 pr-4 text-white text-sm focus:outline-none focus:border-[#c8ff00]/50 transition-colors"
               />
             </div>
           )}
-
-          {/* Email */}
-          <div style={{ position: 'relative' }}>
+          <div className="relative">
+            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-600" size={18} />
             <input
-              id="login-email"
               type="email"
+              name="email"
               placeholder="Email Address"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
               required
-              style={inputStyle}
-              onFocus={e => Object.assign(e.currentTarget.style, inputFocusStyle)}
-              onBlur={e => Object.assign(e.currentTarget.style, inputBlurStyle)}
+              value={formData.email}
+              onChange={handleChange}
+              className="w-full bg-white/[0.02] border border-white/10 rounded-xl py-4 pl-12 pr-4 text-white text-sm focus:outline-none focus:border-[#c8ff00]/50 transition-colors"
             />
           </div>
-
-          {/* Password */}
-          <div style={{ position: 'relative' }}>
+          <div className="relative">
+            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-600" size={18} />
             <input
-              id="login-password"
-              type={showPassword ? 'text' : 'password'}
+              type="password"
+              name="password"
               placeholder="Password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
               required
-              style={{ ...inputStyle, paddingRight: '52px' }}
-              onFocus={e => Object.assign(e.currentTarget.style, { ...inputFocusStyle, paddingRight: '52px' })}
-              onBlur={e => Object.assign(e.currentTarget.style, { ...inputBlurStyle, paddingRight: '52px' })}
+              value={formData.password}
+              onChange={handleChange}
+              className="w-full bg-white/[0.02] border border-white/10 rounded-xl py-4 pl-12 pr-4 text-white text-sm focus:outline-none focus:border-[#c8ff00]/50 transition-colors"
             />
-            <button
-              type="button"
-              onClick={() => setShowPassword(v => !v)}
-              aria-label={showPassword ? 'Hide password' : 'Show password'}
-              style={{
-                position: 'absolute',
-                right: '16px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                color: '#555',
-                display: 'flex',
-                alignItems: 'center',
-                padding: 0,
-                transition: 'color 0.2s',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.color = '#c8ff00')}
-              onMouseLeave={e => (e.currentTarget.style.color = '#555')}
-            >
-              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
           </div>
 
-          {/* Error message */}
-          {error && (
-            <p
-              style={{
-                color: '#ff4d4d',
-                fontSize: '11px',
-                fontWeight: 600,
-                letterSpacing: '0.05em',
-                margin: '4px 0 0',
-                textAlign: 'center',
-              }}
-            >
-              {error}
-            </p>
-          )}
-
-          {/* Submit button */}
           <button
-            id="initialize-session-btn"
             type="submit"
             disabled={isLoading}
-            style={{
-              marginTop: '10px',
-              width: '100%',
-              padding: '17px 0',
-              background: isLoading ? 'rgba(200,255,0,0.6)' : '#c8ff00',
-              color: '#000',
-              border: 'none',
-              borderRadius: '12px',
-              fontWeight: 900,
-              fontSize: '13px',
-              letterSpacing: '0.2em',
-              textTransform: 'uppercase',
-              cursor: isLoading ? 'not-allowed' : 'pointer',
-              transition: 'all 0.2s ease',
-              boxShadow: '0 0 28px rgba(200,255,0,0.3)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '10px',
-            }}
-            onMouseEnter={e => {
-              if (!isLoading) {
-                e.currentTarget.style.boxShadow = '0 0 42px rgba(200,255,0,0.5)';
-                e.currentTarget.style.transform = 'translateY(-1px)';
-              }
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.boxShadow = '0 0 28px rgba(200,255,0,0.3)';
-              e.currentTarget.style.transform = 'translateY(0)';
-            }}
+            className="w-full py-4 bg-[#c8ff00] text-black border-none rounded-xl font-black text-[13px] tracking-[0.15em] uppercase cursor-pointer transition-all shadow-[0_0_20px_rgba(200,255,0,0.2)] flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98]"
           >
             {isLoading ? (
-              <>
-                <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
-                Authenticating...
-              </>
-            ) : isLogin ? (
-              'Initialize Session'
+              <Loader2 size={18} className="animate-spin" />
             ) : (
-              'Create Account'
+              isRegistering ? 'Create Account' : 'Sign In'
             )}
           </button>
         </form>
+
+        <div className="mt-8 text-center">
+          <button
+            onClick={() => setIsRegistering(!isRegistering)}
+            className="text-[10px] font-bold tracking-widest text-neutral-500 uppercase hover:text-[#c8ff00] transition-colors"
+          >
+            {isRegistering ? 'Already have an account? Sign In' : 'New here? Create an account'}
+          </button>
+        </div>
       </div>
 
       {/* ── BACK TO HOME ── */}
       <Link
         to="/"
-        style={{
-          marginTop: '36px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          color: '#444',
-          fontSize: '11px',
-          fontWeight: 700,
-          letterSpacing: '0.18em',
-          textTransform: 'uppercase',
-          textDecoration: 'none',
-          transition: 'color 0.2s ease',
-          position: 'relative',
-          zIndex: 10,
-        }}
-        onMouseEnter={e => (e.currentTarget.style.color = '#c8ff00')}
-        onMouseLeave={e => (e.currentTarget.style.color = '#444')}
+        className="mt-9 flex items-center gap-2.5 text-[#444] text-[11px] font-bold tracking-[0.18em] uppercase no-underline transition-colors hover:text-[#c8ff00] relative z-10"
       >
         <ArrowLeft size={15} />
         Back to Home
       </Link>
-
-      {/* Keyframe for spinner */}
-      <style>{`
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-      `}</style>
     </div>
   );
-};
-
-// ── shared input styles ──────────────────────────────────────────────────────
-const inputStyle: React.CSSProperties = {
-  width: '100%',
-  padding: '15px 18px',
-  background: 'rgba(255,255,255,0.03)',
-  border: '1px solid rgba(255,255,255,0.1)',
-  borderRadius: '12px',
-  color: '#ffffff',
-  fontSize: '14px',
-  fontWeight: 500,
-  outline: 'none',
-  transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
-  boxSizing: 'border-box',
-};
-
-const inputFocusStyle: React.CSSProperties = {
-  borderColor: '#c8ff00',
-  boxShadow: '0 0 0 3px rgba(200,255,0,0.1)',
-};
-
-const inputBlurStyle: React.CSSProperties = {
-  borderColor: 'rgba(255,255,255,0.1)',
-  boxShadow: 'none',
 };
