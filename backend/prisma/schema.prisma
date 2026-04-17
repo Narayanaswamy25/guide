@@ -14,6 +14,26 @@ model User {
   name           String?
   role           String   @default("student")
   selectedDegree String?
+  
+  // Credentials
+  age            Int?
+  gender         String?
+  dob            String?
+
+  // Survey fields (Academic Profile)
+  educationLevel     String?
+  stream             String?
+  subjects           String? // Comma-separated
+  careerInterests    String? // Comma-separated
+  mainGoal           String?
+  learningStyle      String? // Comma-separated
+  studyLocation      String?
+  budgetPreference   String?
+  degreeAwareness    String? // Comma-separated
+  confusionLevel     String?
+  excitementFactor   String?
+  personalityTrigger String?
+  
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 

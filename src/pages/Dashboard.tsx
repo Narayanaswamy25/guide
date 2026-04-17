@@ -3,11 +3,13 @@ import React, { useEffect } from 'react';
 import { motion } from 'motion/react';
 import { 
   CheckCircle2, 
-  Clock, 
-  Flame, 
+  BookOpen, 
+  Compass, 
   TrendingUp,
-  Calendar as CalendarIcon,
-  MoreHorizontal
+  Star,
+  ArrowRight,
+  Zap,
+  Target
 } from 'lucide-react';
 import { 
   AreaChart, 
@@ -18,11 +20,11 @@ import {
   Tooltip, 
   ResponsiveContainer 
 } from 'recharts';
+import { useNavigate } from 'react-router-dom';
 import { useTaskStore } from '../stores/taskStore';
-import { useCourseStore } from '../stores/courseStore';
 import { useModuleStore } from '../stores/moduleStore';
 import { useAuth } from '../context/AuthContext';
-import { formatTimestamp } from '../lib/utils';
+import { degrees } from '../data/degreesData';
 
 const data = [
   { name: 'Mon', focus: 4 },
@@ -36,9 +38,9 @@ const data = [
 
 export const Dashboard: React.FC = () => {
   const [isMounted, setIsMounted] = React.useState(false);
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { tasks, fetchTasks, isLoading } = useTaskStore();
-  const { courses } = useCourseStore();
   const { completedModules } = useModuleStore();
 
   useEffect(() => {
@@ -46,52 +48,28 @@ export const Dashboard: React.FC = () => {
     fetchTasks();
   }, [fetchTasks]);
 
-  // Task Stats
-  const completedTasks = tasks.filter(t => t.status === 'DONE').length;
-  const inProgressTasks = tasks.filter(t => t.status === 'IN_PROGRESS').length;
-  
-  // Course Stats
-  const completedCourses = courses.filter(c => c.status === 'completed').length;
-  const inProgressCourses = courses.filter(c => c.status === 'active').length;
-
   // Roadmap Stats
   const roadmapCompleted = Object.values(completedModules).reduce((acc, mods) => acc + mods.length, 0);
-  // For "In Progress" roadmap, we can count domains that have some progress but aren't finished
-  // But maybe it's simpler to just count the individual modules as "tasks"
+  const activeRoadmaps = Object.keys(completedModules).length;
   
-  const totalCompleted = completedTasks + completedCourses + roadmapCompleted;
-  const totalInProgress = inProgressTasks + inProgressCourses;
-  const urgentTasks = tasks.filter(t => t.priority === 'urgent').length;
-  
-  // Efficiency: Completed tasks vs tasks that were actually started (IN_PROGRESS + DONE)
-  const startedTasks = tasks.filter(t => t.status === 'DONE' || t.status === 'IN_PROGRESS');
-  const startedCourses = courses.filter(c => c.status === 'completed' || c.status === 'active');
-  
-  const totalStarted = startedTasks.length + startedCourses.length + roadmapCompleted;
-  const efficiency = totalStarted > 0 
-    ? Math.round((totalCompleted / totalStarted) * 100) 
-    : 0;
-
-  useEffect(() => {
-    if (tasks.length > 0 || courses.length > 0 || roadmapCompleted > 0) {
-      console.log('Dashboard Metrics Debug:', {
-        totalTasks: tasks.length,
-        totalCourses: courses.length,
-        roadmapCompleted,
-        completed: totalCompleted,
-        inProgress: totalInProgress,
-        started: totalStarted,
-        efficiency: efficiency
-      });
-    }
-  }, [tasks, courses, roadmapCompleted, totalCompleted, totalInProgress, totalStarted, efficiency]);
+  // Calculate Career Clarity (Mock logic based on survey and progress)
+  const surveyProgress = user?.careerInterests ? 100 : 0;
+  const clarityScore = Math.min(100, Math.round((roadmapCompleted * 5) + (surveyProgress * 0.5)));
 
   const stats = [
-    { label: 'Completed', value: totalCompleted, icon: CheckCircle2, color: 'text-[#DFFF00]' },
-    { label: 'In Progress', value: totalInProgress, icon: Clock, color: 'text-[#FF00FF]' },
-    { label: 'Urgent', value: urgentTasks, icon: Flame, color: 'text-[#00FFFF]' },
-    { label: 'Efficiency', value: `${efficiency}%`, icon: TrendingUp, color: 'text-white' },
+    { label: 'Modules Mastered', value: roadmapCompleted, icon: CheckCircle2, color: 'text-[#DFFF00]' },
+    { label: 'Active Roadmaps', value: activeRoadmaps, icon: Compass, color: 'text-[#FF00FF]' },
+    { label: 'Clarity Score', value: `${clarityScore}%`, icon: Target, color: 'text-[#00FFFF]' },
+    { label: 'Learning Velocity', value: 'Optimal', icon: TrendingUp, color: 'text-white' },
   ];
+
+  // Recommended Degrees based on interests
+  const interests = user?.careerInterests?.split(',') || [];
+  const recommendedDegrees = degrees.filter(d => 
+    d.domains.some(dom => dom.jobRoles.some(role => 
+      interests.some(interest => role.toLowerCase().includes(interest.toLowerCase().trim()))
+    ))
+  ).slice(0, 3);
 
   if (isLoading && tasks.length === 0) {
     return (
@@ -105,7 +83,7 @@ export const Dashboard: React.FC = () => {
         
         <div className="flex flex-col items-center gap-3">
           <div className="text-[#DFFF00] font-black uppercase tracking-[0.6em] text-sm animate-pulse">
-            Loading Your Dashboard
+            Initializing Guide Dashboard
           </div>
           <div className="flex items-center gap-2">
             {[0, 1, 2].map((i) => (
@@ -125,11 +103,6 @@ export const Dashboard: React.FC = () => {
             ))}
           </div>
         </div>
-
-        <div className="text-neutral-600 font-mono text-[9px] uppercase tracking-[0.3em] max-w-xs text-center leading-relaxed">
-          Connecting to secure backend API... <br />
-          Retrieving operational telemetry...
-        </div>
       </div>
     );
   }
@@ -138,63 +111,62 @@ export const Dashboard: React.FC = () => {
     <div className="space-y-10">
       {/* Header */}
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div className="flex items-center gap-6">
-          <div className="w-20 h-20 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
+        <div className="flex items-center gap-4 md:gap-6">
+          <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl md:rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
             {user?.avatar ? (
               <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
             ) : (
-              <span className="text-3xl font-black text-[#DFFF00]">{user?.name.charAt(0)}</span>
+              <span className="text-2xl md:text-3xl font-black text-[#DFFF00]">{user?.name.charAt(0)}</span>
             )}
           </div>
           <div>
-            <div className="text-[10px] font-black uppercase tracking-[0.4em] text-[#DFFF00] mb-2">
-              Operational Overview // {new Date().toLocaleDateString()}
+            <div className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] text-[#DFFF00] mb-1 md:mb-2">
+              Academic Intelligence // {new Date().toLocaleDateString()}
             </div>
-            <h1 className="text-5xl font-black uppercase tracking-tighter text-white dark:text-white light:text-neutral-900">
+            <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter text-white dark:text-white light:text-neutral-900 leading-none">
               Welcome, {user?.name.split(' ')[0]}
             </h1>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <button className="px-6 py-3 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-neutral-400 hover:text-white hover:bg-white/10 transition-all">
-            Export Report
-          </button>
-          <button className="px-6 py-3 bg-[#DFFF00] text-black rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_20px_rgba(223,255,0,0.2)]">
-            Sync Data
+        <div className="flex items-center gap-2 md:gap-3">
+          <button 
+            onClick={() => navigate('/explore')}
+            className="flex-1 md:flex-none px-4 md:px-6 py-3 bg-[#DFFF00] text-black rounded-xl text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_20px_rgba(223,255,0,0.2)] flex items-center gap-2"
+          >
+            <Compass size={14} /> Explore Degrees
           </button>
         </div>
       </header>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         {stats.map((stat, i) => (
           <motion.div
             key={i}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.1 }}
-            className="glass-card p-8 group relative overflow-hidden"
+            className="glass-card p-5 md:p-8 group relative overflow-hidden"
           >
             <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-[#DFFF00]/10 transition-colors duration-500"></div>
-            <stat.icon className={`${stat.color} mb-6`} size={24} />
-            <div className="text-4xl font-black text-white dark:text-white light:text-neutral-900 mb-2 tracking-tighter">{stat.value}</div>
-            <div className="text-[9px] font-black uppercase tracking-widest text-neutral-600">{stat.label}</div>
+            <stat.icon className={`${stat.color} mb-4 md:mb-6`} size={20} />
+            <div className="text-2xl md:text-4xl font-black text-white dark:text-white light:text-neutral-900 mb-1 md:mb-2 tracking-tighter">{stat.value}</div>
+            <div className="text-[8px] md:text-[9px] font-black uppercase tracking-widest text-neutral-600">{stat.label}</div>
           </motion.div>
         ))}
       </div>
 
       <div className="grid lg:grid-cols-12 gap-6">
-        {/* Productivity Chart */}
+        {/* Learning Velocity Chart */}
         <div className="lg:col-span-8 glass-card p-8">
           <div className="flex items-center justify-between mb-10">
             <div>
-              <h2 className="text-xl font-black uppercase tracking-tight text-white dark:text-white light:text-neutral-900 mb-1">Focus Intensity</h2>
-              <p className="text-[10px] text-neutral-500 font-black uppercase tracking-widest">Weekly Cognitive Output</p>
+              <h2 className="text-xl font-black uppercase tracking-tight text-white dark:text-white light:text-neutral-900 mb-1">Learning Velocity</h2>
+              <p className="text-[10px] text-neutral-500 font-black uppercase tracking-widest">Roadmap Mastery Progress</p>
             </div>
-            <select className="bg-transparent border-none text-[10px] font-black uppercase tracking-widest text-[#DFFF00] focus:outline-none cursor-pointer">
-              <option>Last 7 Days</option>
-              <option>Last 30 Days</option>
-            </select>
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-[9px] font-black uppercase tracking-widest text-[#DFFF00]">
+              <Zap size={10} /> Optimal Pace
+            </div>
           </div>
           <div className="h-[300px] w-full min-h-[300px] relative">
             <div className="absolute inset-0">
@@ -243,71 +215,84 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Recent Activity */}
+        {/* Career Interests */}
         <div className="lg:col-span-4 glass-card p-8">
-          <h2 className="text-xl font-black uppercase tracking-tight text-white dark:text-white light:text-neutral-900 mb-8">Recent Activity</h2>
-          <div className="space-y-8">
-            {tasks.slice(0, 4).map((task, i) => (
-              <div key={i} className="flex items-start gap-4 group">
-                <div className={`w-2 h-2 rounded-full mt-1.5 ${
-                  task.status === 'DONE' ? 'bg-[#DFFF00]' : 'bg-neutral-800'
-                }`}></div>
-                <div className="flex-grow">
-                  <div className="text-[11px] font-black text-white dark:text-white light:text-neutral-900 uppercase tracking-tight group-hover:text-[#DFFF00] transition-colors cursor-pointer">
-                    {task.title}
-                  </div>
-                  <div className="text-[9px] text-neutral-600 font-black uppercase tracking-widest mt-1">
-                    {task.status} {'//'} {task.priority}
-                  </div>
+          <h2 className="text-xl font-black uppercase tracking-tight text-white dark:text-white light:text-neutral-900 mb-8">Career Interests</h2>
+          <div className="space-y-4">
+            {interests.length > 0 ? (
+              interests.map((interest, i) => (
+                <div key={i} className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/5 rounded-xl group hover:border-[#DFFF00]/20 transition-all">
+                  <span className="text-[11px] font-black text-white uppercase tracking-tight">{interest.trim()}</span>
+                  <div className="w-2 h-2 rounded-full bg-[#DFFF00] animate-pulse" />
                 </div>
-                <div className="text-[8px] text-neutral-800 font-black uppercase tracking-widest">
-                  {formatTimestamp(task.updatedAt)}
-                </div>
+              ))
+            ) : (
+              <div className="text-center py-10">
+                <p className="text-[10px] text-neutral-600 font-black uppercase tracking-widest mb-4">No interests set</p>
+                <button 
+                  onClick={() => navigate('/profile')}
+                  className="text-[10px] font-black uppercase tracking-widest text-[#DFFF00] hover:underline"
+                >
+                  Update Profile
+                </button>
               </div>
-            ))}
+            )}
           </div>
-          <button className="w-full mt-10 py-4 border border-white/5 rounded-xl text-[9px] font-black uppercase tracking-widest text-neutral-600 hover:text-white hover:bg-white/5 transition-all">
-            View All Logs
-          </button>
+          <div className="mt-8 p-4 bg-[#FF00FF]/5 border border-[#FF00FF]/10 rounded-xl">
+            <div className="text-[8px] font-black uppercase tracking-widest text-[#FF00FF] mb-1">Pro Tip</div>
+            <p className="text-[10px] text-neutral-400 font-medium leading-relaxed">Complete more quizzes to increase your Career Clarity score.</p>
+          </div>
         </div>
       </div>
 
-      {/* Upcoming Tasks */}
+      {/* Recommended for You */}
       <section className="glass-card p-8">
         <div className="flex items-center justify-between mb-10">
-          <h2 className="text-xl font-black uppercase tracking-tight text-white dark:text-white light:text-neutral-900">Critical Deadlines</h2>
-          <button className="text-[10px] font-black uppercase tracking-widest text-[#DFFF00] hover:text-white transition-colors">
-            View Full Queue
+          <div>
+            <h2 className="text-xl font-black uppercase tracking-tight text-white dark:text-white light:text-neutral-900 mb-1">Recommended Degrees</h2>
+            <p className="text-[10px] text-neutral-500 font-black uppercase tracking-widest">Based on your career interests</p>
+          </div>
+          <button 
+            onClick={() => navigate('/explore')}
+            className="text-[10px] font-black uppercase tracking-widest text-[#DFFF00] hover:text-white transition-colors"
+          >
+            View All
           </button>
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {tasks.filter(t => t.priority === 'urgent' || t.priority === 'high').slice(0, 3).map((task, i) => (
-            <div key={i} className="p-6 bg-white/[0.02] border border-white/5 rounded-2xl hover:border-[#DFFF00]/20 transition-all group">
-              <div className="flex items-center justify-between mb-4">
-                <div className={`px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest ${
-                  task.priority === 'urgent' ? 'bg-red-500/10 text-red-500' : 'bg-[#FF00FF]/10 text-[#FF00FF]'
-                }`}>
-                  {task.priority}
+          {recommendedDegrees.length > 0 ? (
+            recommendedDegrees.map((degree, i) => (
+              <div 
+                key={i} 
+                onClick={() => navigate(`/explore/${degree.id}`)}
+                className="p-6 bg-white/[0.02] border border-white/5 rounded-2xl hover:border-[#DFFF00]/20 transition-all group cursor-pointer"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="px-2 py-1 bg-[#DFFF00]/10 text-[#DFFF00] rounded text-[8px] font-black uppercase tracking-widest">
+                    {degree.level}
+                  </div>
+                  <Star size={14} className="text-neutral-700 group-hover:text-[#DFFF00] transition-colors" />
                 </div>
-                <button className="text-neutral-700 group-hover:text-white transition-colors">
-                  <MoreHorizontal size={16} />
-                </button>
+                <h3 className="text-sm font-black text-white dark:text-white light:text-neutral-900 uppercase tracking-tight mb-2 group-hover:text-[#DFFF00] transition-colors">
+                  {degree.title}
+                </h3>
+                <div className="flex items-center gap-4 text-[9px] text-neutral-600 font-black uppercase tracking-widest">
+                  <div className="flex items-center gap-1">
+                    <BookOpen size={12} />
+                    <span>{degree.domains.length} Domains</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <ArrowRight size={12} />
+                    <span>Explore</span>
+                  </div>
+                </div>
               </div>
-              <h3 className="text-sm font-black text-white dark:text-white light:text-neutral-900 uppercase tracking-tight mb-2 group-hover:text-[#DFFF00] transition-colors">
-                {task.title}
-              </h3>
-              <div className="flex items-center gap-4 text-[9px] text-neutral-600 font-black uppercase tracking-widest">
-                <div className="flex items-center gap-1">
-                  <CalendarIcon size={12} />
-                  <span>{task.dueDate}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Clock size={12} />
-                  <span>14:00</span>
-                </div>
-              </div>
+            ))
+          ) : (
+            <div className="col-span-full py-10 text-center border border-dashed border-white/10 rounded-2xl">
+              <p className="text-[10px] text-neutral-600 font-black uppercase tracking-widest">Complete your academic profile to see recommendations</p>
             </div>
-          ))}
+          )}
         </div>
       </section>
     </div>

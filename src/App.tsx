@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { AppLayout } from './components/layout/AppLayout';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { ScrollToTop } from './components/ScrollToTop';
 import { Home } from './pages/Home';
 import { Dashboard } from './pages/Dashboard';
 import { Tasks } from './pages/Tasks';
@@ -22,6 +23,8 @@ import { RoadmapPage } from './pages/RoadmapPage';
 import { QuizPage } from './pages/QuizPage';
 import { QuizResult } from './pages/QuizResult';
 import { ExtraSkills } from './pages/ExtraSkills';
+import { About } from './pages/About';
+import { Contact } from './pages/Contact';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, isAuthReady } = useAuth();
@@ -66,6 +69,8 @@ const AnimatedRoutes: React.FC = () => {
   return (
     <Routes location={location}>
       <Route path="/" element={<Home />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/contact" element={<Contact />} />
       <Route path="/login" element={<Login />} />
       
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
@@ -97,6 +102,7 @@ function App() {
       <ThemeProvider>
         <AuthProvider>
           <Router>
+            <ScrollToTop />
             <div className="min-h-screen bg-black dark:bg-black light:bg-white selection:bg-[#DFFF00] selection:text-black transition-colors duration-300">
               <AnimatedRoutes />
             </div>

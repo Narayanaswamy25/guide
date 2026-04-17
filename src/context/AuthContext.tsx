@@ -18,12 +18,36 @@ interface User {
   twitter?: string;
   linkedin?: string;
   focusHours?: number;
+  
+  // Credentials
+  age?: number;
+  gender?: string;
+  dob?: string;
+
+  // Survey fields (Academic Profile)
+  educationLevel?: string;
+  stream?: string;
+  subjects?: string;
+  careerInterests?: string;
+  mainGoal?: string;
+  learningStyle?: string;
+  studyLocation?: string;
+  budgetPreference?: string;
+  degreeAwareness?: string;
+  confusionLevel?: string;
+  excitementFactor?: string;
+  personalityTrigger?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, name: string) => Promise<void>;
+  register: (
+    email: string, 
+    password: string, 
+    name: string,
+    surveyData?: Partial<User>
+  ) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
   isAuthReady: boolean;
@@ -84,9 +108,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const register = async (email: string, password: string, name: string) => {
+  const register = async (
+    email: string, 
+    password: string, 
+    name: string,
+    surveyData?: Partial<User>
+  ) => {
     try {
-      const response = await api.post('/auth/register', { email, password, name });
+      const response = await api.post('/auth/register', { 
+        email, 
+        password, 
+        name,
+        ...surveyData
+      });
       const { token, user: userData } = response.data;
       localStorage.setItem('token', token);
       setUser(userData);

@@ -37,7 +37,7 @@ export const Home: React.FC = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, ease: [0.23, 1, 0.32, 1] }}
-            className="text-7xl sm:text-9xl md:text-[12rem] lg:text-[14rem] font-black tracking-tighter text-white mb-10 leading-[0.8] uppercase"
+            className="text-5xl sm:text-7xl md:text-[10rem] lg:text-[14rem] font-black tracking-tighter text-white mb-10 leading-[0.8] uppercase"
           >
             <span className="block">Master Your</span>
             <span className="text-[#DFFF00] block">Education</span>

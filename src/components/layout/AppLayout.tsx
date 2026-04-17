@@ -5,6 +5,8 @@ import { GlobalSearch } from '../GlobalSearch';
 import { motion, AnimatePresence } from 'motion/react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { Menu, X } from 'lucide-react';
+import { useUIStore } from '../../stores/uiStore';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -13,6 +15,7 @@ interface AppLayoutProps {
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const location = useLocation();
   const { user } = useAuth();
+  const { isMobileMenuOpen, toggleMobileMenu } = useUIStore();
 
   return (
     <div className="flex h-screen bg-[#000000] dark:bg-[#000000] light:bg-[#F8F9FA] text-white dark:text-white light:text-neutral-900 overflow-hidden font-sans transition-colors duration-300">
@@ -22,8 +25,14 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       {/* Main Content Area */}
       <div className="flex-grow flex flex-col min-w-0 relative">
         {/* Top Navigation Bar */}
-        <header className="h-20 border-b border-white/5 light:border-neutral-200 flex items-center justify-between px-8 sticky top-0 bg-black/50 dark:bg-black/50 light:bg-white/80 backdrop-blur-xl z-40">
-          <div className="flex items-center gap-8">
+        <header className="h-20 border-b border-white/5 light:border-neutral-200 flex items-center justify-between px-4 md:px-8 sticky top-0 bg-black/50 dark:bg-black/50 light:bg-white/80 backdrop-blur-xl z-40">
+          <div className="flex items-center gap-4 md:gap-8">
+            <button 
+              onClick={toggleMobileMenu}
+              className="lg:hidden p-2 text-neutral-400 hover:text-white transition-colors"
+            >
+              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
             <GlobalSearch />
           </div>
           

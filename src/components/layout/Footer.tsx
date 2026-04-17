@@ -34,27 +34,51 @@ export const Footer: React.FC = () => {
           {[
             {
               title: "Platform",
-              links: ["Features", "Courses", "Dashboard", "Analytics", "Support"]
+              links: [
+                { name: "Dashboard", path: "/dashboard" },
+                { name: "Tasks", path: "/tasks" },
+                { name: "Habits", path: "/habits" },
+                { name: "Analytics", path: "/analytics" },
+                { name: "Courses", path: "/courses" }
+              ]
             },
             {
-              title: "Company",
-              links: ["About", "Careers", "Blog", "Press", "Contact"]
+              title: "Explore",
+              links: [
+                { name: "Degrees", path: "/explore" },
+                { name: "Roadmaps", path: "/explore" },
+                { name: "Skills", path: "/extra-skills" },
+                { name: "About", path: "/about" },
+                { name: "Contact", path: "/contact" }
+              ]
             },
             {
-              title: "Legal",
-              links: ["Privacy", "Terms", "Security", "Cookies", "Licenses"]
+              title: "Resources",
+              links: [
+                { name: "Documentation", path: "#" },
+                { name: "Help Center", path: "#" },
+                { name: "Community", path: "#" },
+                { name: "Privacy", path: "#" },
+                { name: "Terms", path: "#" }
+              ]
             }
           ].map((column) => (
             <div key={column.title} className="space-y-8">
-              <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-white underline decoration-[#DFFF00] decoration-2 underline-offset-8">
+              <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-white border-b border-[#DFFF00] pb-2 inline-block">
                 {column.title}
               </h4>
               <ul className="space-y-4">
                 {column.links.map((link) => (
-                  <li key={link}>
-                    <a href="#" className="text-neutral-500 hover:text-white transition-colors text-sm font-medium">
-                      {link}
-                    </a>
+                  <li key={link.name}>
+                    {link.path.startsWith('/') ? (
+                      <Link to={link.path} className="text-neutral-500 hover:text-[#DFFF00] transition-colors text-xs font-black uppercase tracking-widest">
+                        {link.name}
+                      </Link>
+                    ) : (
+                      <a href={link.path} className="text-neutral-500 hover:text-[#DFFF00] transition-colors text-xs font-black uppercase tracking-widest">
+                        {link.name}
+                      </a>
+                    )}
                   </li>
                 ))}
               </ul>

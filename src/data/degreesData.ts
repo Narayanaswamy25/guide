@@ -406,3 +406,18 @@ export const getDegreeById = (id: string): Degree | undefined =>
 
 export const getDomainById = (degreeId: string, domainId: string): Domain | undefined =>
   getDegreeById(degreeId)?.domains.find(d => d.id === domainId);
+
+export const getSimilarJobRoles = (currentDomainId: string): string[] => {
+  const allRoles = new Set<string>();
+  degrees.forEach(degree => {
+    degree.domains.forEach(domain => {
+      if (domain.id !== currentDomainId) {
+        domain.jobRoles.forEach(role => allRoles.add(role));
+      }
+    });
+  });
+  
+  // For now, just return a few random ones that are different from the current ones
+  // In a real app, this would be based on similarity scores
+  return Array.from(allRoles).sort(() => 0.5 - Math.random()).slice(0, 4);
+};

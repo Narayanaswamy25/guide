@@ -38,6 +38,21 @@ export const Profile: React.FC = () => {
     github: user?.github || '',
     twitter: user?.twitter || '',
     linkedin: user?.linkedin || '',
+    age: user?.age || '',
+    gender: user?.gender || '',
+    dob: user?.dob || '',
+    educationLevel: user?.educationLevel || '',
+    stream: user?.stream || '',
+    subjects: user?.subjects || '',
+    careerInterests: user?.careerInterests || '',
+    mainGoal: user?.mainGoal || '',
+    learningStyle: user?.learningStyle || '',
+    studyLocation: user?.studyLocation || '',
+    budgetPreference: user?.budgetPreference || '',
+    degreeAwareness: user?.degreeAwareness || '',
+    confusionLevel: user?.confusionLevel || '',
+    excitementFactor: user?.excitementFactor || '',
+    personalityTrigger: user?.personalityTrigger || '',
   });
 
   if (!isAuthenticated) return null;
@@ -53,6 +68,27 @@ export const Profile: React.FC = () => {
     { label: 'Efficiency', value: tasks.length > 0 ? `${Math.round((completedTasks / tasks.length) * 100)}%` : '0%', icon: TrendingUp, color: 'text-white' },
   ];
 
+  const educationLevels = [
+    'High School (8–10)',
+    'Higher Secondary (11–12)',
+    'Diploma',
+    'Undergraduate (UG)',
+    'Postgraduate (PG)',
+    'Gap Year / Exploring',
+  ];
+
+  const streams = {
+    school: ['Science', 'Commerce', 'Arts / Humanities', 'Vocational'],
+    college: ['Engineering', 'Medical', 'Business', 'Arts', 'Science', 'Other']
+  };
+
+  const learningStyles = [
+    { id: 'visual', label: 'Visual', icon: '👀' },
+    { id: 'auditory', label: 'Auditory', icon: '🎧' },
+    { id: 'reading', label: 'Reading/Writing', icon: '📖' },
+    { id: 'kinesthetic', label: 'Kinesthetic', icon: '✋' },
+  ];
+
   const handleSave = async () => {
     try {
       await updateProfile(editForm);
@@ -62,8 +98,34 @@ export const Profile: React.FC = () => {
     }
   };
 
+  const renderMultiSelect = (field: keyof typeof editForm, options: string[]) => {
+    const current = (editForm[field] as string).split(',').filter(Boolean);
+    return (
+      <div className="flex flex-wrap gap-2">
+        {options.map(opt => (
+          <button
+            key={opt}
+            onClick={() => {
+              const next = current.includes(opt) 
+                ? current.filter(i => i !== opt) 
+                : [...current, opt];
+              setEditForm(prev => ({ ...prev, [field]: next.join(',') }));
+            }}
+            className={`px-3 py-1.5 rounded-lg border text-[10px] font-bold uppercase transition-all ${
+              current.includes(opt)
+                ? 'bg-[#DFFF00]/10 border-[#DFFF00] text-white'
+                : 'bg-white/5 border-white/10 text-neutral-500'
+            }`}
+          >
+            {opt}
+          </button>
+        ))}
+      </div>
+    );
+  };
+
   return (
-    <div className="space-y-10">
+    <div className="space-y-10 pb-20">
       {/* Header */}
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-12">
         <div className="flex items-center space-x-10">
@@ -83,7 +145,7 @@ export const Profile: React.FC = () => {
           <div>
             <div className="flex items-center space-x-4 text-[#DFFF00] text-[10px] font-black uppercase tracking-[0.4em] mb-4">
               <Target size={14} />
-              <span>Verified Identity</span>
+              <span>Verified Identity // {user?.email}</span>
             </div>
             <h1 className="text-6xl md:text-8xl font-black uppercase tracking-tighter text-white leading-none mb-4">
               {isEditing ? (
@@ -163,6 +225,258 @@ export const Profile: React.FC = () => {
 
       <div className="grid lg:grid-cols-12 gap-12">
         <div className="lg:col-span-8 space-y-12">
+          {/* Credentials Section */}
+          <section className="glass-card p-12 relative overflow-hidden">
+            <h2 className="text-2xl font-black uppercase tracking-tight text-white mb-8 flex items-center">
+              <Shield className="text-[#DFFF00] mr-4" size={24} />
+              Identity Credentials
+            </h2>
+            <div className="grid md:grid-cols-3 gap-8">
+              <div>
+                <label className="block text-[9px] font-black uppercase tracking-[0.2em] text-neutral-600 mb-2">Age</label>
+                {isEditing ? (
+                  <input
+                    type="number"
+                    value={editForm.age}
+                    onChange={e => setEditForm(prev => ({ ...prev, age: e.target.value }))}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-sm outline-none focus:border-[#DFFF00]/50"
+                  />
+                ) : (
+                  <div className="text-white font-bold">{user?.age || 'Not specified'}</div>
+                )}
+              </div>
+              <div>
+                <label className="block text-[9px] font-black uppercase tracking-[0.2em] text-neutral-600 mb-2">Gender</label>
+                {isEditing ? (
+                  <select
+                    value={editForm.gender}
+                    onChange={e => setEditForm(prev => ({ ...prev, gender: e.target.value }))}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-sm outline-none focus:border-[#DFFF00]/50"
+                  >
+                    <option value="" disabled className="bg-[#1a1a1a]">Select</option>
+                    <option value="Male" className="bg-[#1a1a1a]">Male</option>
+                    <option value="Female" className="bg-[#1a1a1a]">Female</option>
+                    <option value="Other" className="bg-[#1a1a1a]">Other</option>
+                  </select>
+                ) : (
+                  <div className="text-white font-bold">{user?.gender || 'Not specified'}</div>
+                )}
+              </div>
+              <div>
+                <label className="block text-[9px] font-black uppercase tracking-[0.2em] text-neutral-600 mb-2">DOB</label>
+                {isEditing ? (
+                  <input
+                    type="date"
+                    value={editForm.dob}
+                    onChange={e => setEditForm(prev => ({ ...prev, dob: e.target.value }))}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-sm outline-none focus:border-[#DFFF00]/50"
+                  />
+                ) : (
+                  <div className="text-white font-bold">{user?.dob || 'Not specified'}</div>
+                )}
+              </div>
+            </div>
+          </section>
+
+          {/* Academic Profile Section */}
+          <section className="glass-card p-12 relative overflow-hidden">
+            <h2 className="text-2xl font-black uppercase tracking-tight text-white mb-8 flex items-center">
+              <GraduationCap className="text-[#DFFF00] mr-4" size={24} />
+              Academic Profile
+            </h2>
+            
+            <div className="space-y-10">
+              <div className="grid md:grid-cols-2 gap-8">
+                <div>
+                  <label className="block text-[9px] font-black uppercase tracking-[0.2em] text-neutral-600 mb-2">Education Level</label>
+                  {isEditing ? (
+                    <select
+                      value={editForm.educationLevel}
+                      onChange={e => setEditForm(prev => ({ ...prev, educationLevel: e.target.value }))}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-sm outline-none focus:border-[#DFFF00]/50"
+                    >
+                      {educationLevels.map(level => (
+                        <option key={level} value={level} className="bg-[#1a1a1a]">{level}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className="text-white font-bold">{user?.educationLevel || 'Not specified'}</div>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-[9px] font-black uppercase tracking-[0.2em] text-neutral-600 mb-2">Stream / Background</label>
+                  {isEditing ? (
+                    <select
+                      value={editForm.stream}
+                      onChange={e => setEditForm(prev => ({ ...prev, stream: e.target.value }))}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-sm outline-none focus:border-[#DFFF00]/50"
+                    >
+                      {(editForm.educationLevel.includes('High') || editForm.educationLevel.includes('Secondary') ? streams.school : streams.college).map(stream => (
+                        <option key={stream} value={stream} className="bg-[#1a1a1a]">{stream}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className="text-white font-bold">{user?.stream || 'Not specified'}</div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[9px] font-black uppercase tracking-[0.2em] text-neutral-600 mb-4">Subjects Enjoyed</label>
+                {isEditing ? (
+                  renderMultiSelect('subjects', ['Mathematics', 'Biology', 'Physics', 'Chemistry', 'Computer Science', 'Business / Economics', 'History / Civics', 'Literature / Languages', 'Arts / Design'])
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {user?.subjects?.split(',').filter(Boolean).map(s => (
+                      <span key={s} className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold text-white uppercase">{s}</span>
+                    )) || <span className="text-neutral-500 italic">None specified</span>}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-[9px] font-black uppercase tracking-[0.2em] text-neutral-600 mb-4">Career Interests</label>
+                {isEditing ? (
+                  renderMultiSelect('careerInterests', ['Software / IT', 'Doctor / Healthcare', 'Business / Entrepreneurship', 'Government Jobs', 'Research / Scientist', 'Design / Creative', 'Law', 'Teaching', 'Finance', 'Not Sure Yet'])
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {user?.careerInterests?.split(',').filter(Boolean).map(s => (
+                      <span key={s} className="px-3 py-1 bg-[#DFFF00]/10 border border-[#DFFF00]/20 rounded-full text-[10px] font-bold text-[#DFFF00] uppercase">{s}</span>
+                    )) || <span className="text-neutral-500 italic">None specified</span>}
+                  </div>
+                )}
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-8">
+                <div>
+                  <label className="block text-[9px] font-black uppercase tracking-[0.2em] text-neutral-600 mb-2">Main Goal</label>
+                  {isEditing ? (
+                    <select
+                      value={editForm.mainGoal}
+                      onChange={e => setEditForm(prev => ({ ...prev, mainGoal: e.target.value }))}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-sm outline-none focus:border-[#DFFF00]/50"
+                    >
+                      {['Explore different degrees', 'Decide my career path', 'Prepare for entrance exams', 'Learn skills', 'Just curious'].map(g => (
+                        <option key={g} value={g} className="bg-[#1a1a1a]">{g}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className="text-white font-bold">{user?.mainGoal || 'Not specified'}</div>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-[9px] font-black uppercase tracking-[0.2em] text-neutral-600 mb-2">Study Location</label>
+                  {isEditing ? (
+                    <select
+                      value={editForm.studyLocation}
+                      onChange={e => setEditForm(prev => ({ ...prev, studyLocation: e.target.value }))}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-sm outline-none focus:border-[#DFFF00]/50"
+                    >
+                      {['India', 'Abroad', 'Either is fine', 'Not decided'].map(l => (
+                        <option key={l} value={l} className="bg-[#1a1a1a]">{l}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className="text-white font-bold">{user?.studyLocation || 'Not specified'}</div>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-8">
+                <div>
+                  <label className="block text-[9px] font-black uppercase tracking-[0.2em] text-neutral-600 mb-2">Budget Preference</label>
+                  {isEditing ? (
+                    <select
+                      value={editForm.budgetPreference}
+                      onChange={e => setEditForm(prev => ({ ...prev, budgetPreference: e.target.value }))}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-sm outline-none focus:border-[#DFFF00]/50"
+                    >
+                      {['Low-cost / Government colleges', 'Medium budget', 'Premium / Private / Abroad', 'Not sure'].map(b => (
+                        <option key={b} value={b} className="bg-[#1a1a1a]">{b}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className="text-white font-bold">{user?.budgetPreference || 'Not specified'}</div>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-[9px] font-black uppercase tracking-[0.2em] text-neutral-600 mb-2">Confusion Level</label>
+                  {isEditing ? (
+                    <select
+                      value={editForm.confusionLevel}
+                      onChange={e => setEditForm(prev => ({ ...prev, confusionLevel: e.target.value }))}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-sm outline-none focus:border-[#DFFF00]/50"
+                    >
+                      {['😵 Very confused', '🤔 Somewhat clear', '😎 Very clear'].map(c => (
+                        <option key={c} value={c} className="bg-[#1a1a1a]">{c}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className="text-white font-bold">{user?.confusionLevel || 'Not specified'}</div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[9px] font-black uppercase tracking-[0.2em] text-neutral-600 mb-4">Learning Style</label>
+                {isEditing ? (
+                  renderMultiSelect('learningStyle', ['visual', 'auditory', 'reading', 'kinesthetic'])
+                ) : (
+                  <div className="flex gap-4">
+                    {user?.learningStyle?.split(',').filter(Boolean).map(s => {
+                      const style = learningStyles.find(ls => ls.id === s);
+                      return (
+                        <div key={s} className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-xl border border-white/10">
+                          <span className="text-lg">{style?.icon}</span>
+                          <span className="text-[10px] font-bold text-white uppercase">{style?.label}</span>
+                        </div>
+                      );
+                    }) || <span className="text-neutral-500 italic">None specified</span>}
+                  </div>
+                )}
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-8">
+                <div>
+                  <label className="block text-[9px] font-black uppercase tracking-[0.2em] text-neutral-600 mb-2">Excitement Factor</label>
+                  {isEditing ? (
+                    <select
+                      value={editForm.excitementFactor}
+                      onChange={e => setEditForm(prev => ({ ...prev, excitementFactor: e.target.value }))}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-sm outline-none focus:border-[#DFFF00]/50"
+                    >
+                      {['Solving problems', 'Helping people', 'Creating things', 'Leading teams', 'Analyzing data'].map(f => (
+                        <option key={f} value={f} className="bg-[#1a1a1a]">{f}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className="text-white font-bold">{user?.excitementFactor || 'Not specified'}</div>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-[9px] font-black uppercase tracking-[0.2em] text-neutral-600 mb-2">Personality Trigger</label>
+                  {isEditing ? (
+                    <select
+                      value={editForm.personalityTrigger}
+                      onChange={e => setEditForm(prev => ({ ...prev, personalityTrigger: e.target.value }))}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-sm outline-none focus:border-[#DFFF00]/50"
+                    >
+                      {['I like logic & numbers', 'I like creativity & design', 'I like communication & people', 'I like research & deep thinking'].map(t => (
+                        <option key={t} value={t} className="bg-[#1a1a1a]">{t}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className="text-white font-bold">{user?.personalityTrigger || 'Not specified'}</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </section>
+
           {/* Bio Section */}
           <section className="glass-card p-12 relative overflow-hidden">
             <h2 className="text-2xl font-black uppercase tracking-tight text-white mb-8 flex items-center">
